@@ -5,18 +5,13 @@ from .helper import generate_unique_id
 
 TICKET_STATUS = ["ACTIVE", "CLOSED", "DELETED"]
 
-# POST /tickets payload
-class PostTicketUserPayload(BaseModel):
-    username: str
-    email: EmailStr
-
 class PostTicketPayload(BaseModel):
     title: str
     description: str
-    user: PostTicketUserPayload | None
 
 # Ticket model
 class TicketUser(BaseModel):
+    id: int = Field(default_factory=generate_unique_id)
     username: str
     email: EmailStr
     is_authenticated: bool
