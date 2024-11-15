@@ -15,7 +15,7 @@ load_dotenv()
 
 jwt_enc = JWT(encryption_key=os.getenv('SECRET_KEY'))
 
-bp_tickets = Blueprint('tickets', __name__, url_prefix='/tickets')
+bp_tickets = Blueprint('tickets', __name__, url_prefix='/api/v1/tickets')
 
 
 @bp_tickets.route('/', methods=['POST'])
