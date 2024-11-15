@@ -22,7 +22,7 @@ class TicketUser(BaseModel):
     is_authenticated: bool
 
 class Ticket(BaseModel):
-    id: int = Field(default_factory=generate_unique_id())
+    id: int = Field(default_factory=generate_unique_id)
     title: str
     description: str
     user: TicketUser
