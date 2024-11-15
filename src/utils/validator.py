@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing_extensions import Literal
+from typing_extensions import Literal, Optional
 from datetime import datetime, timezone
 from .helper import generate_unique_id
 
@@ -23,5 +23,6 @@ class Ticket(BaseModel):
     user: TicketUser
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    last_seen_message_id: int | None
+    last_seen_message_id: Optional[int] = None
+    is_resolved: bool = False
     status: Literal["ACTIVE", "DELETED", "CLOSED", "PENDING"]
