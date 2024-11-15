@@ -4,6 +4,8 @@ from utils.validator import PostTicketPayload, Ticket, TicketUser
 from utils.exceptions import AuthenticationFailed, InternalServerError
 
 
+from database.tickets import insert_ticket, get_ticket
+
 
 from modules.auth import JWT
 from dotenv import load_dotenv
@@ -40,9 +42,11 @@ def create_ticket():
         last_seen_message_id=None,
         status="ACTIVE"
     )
-
     # Need to add the data into database
+    insert_ticket(ticket_data)
 
     # Need to send an socket event
+    
 
     return jsonify(ticket_data.model_dump()), 201
+
