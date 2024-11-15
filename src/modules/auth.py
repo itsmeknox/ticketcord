@@ -22,6 +22,6 @@ class JWT:
         try:
             return jwt.decode(token, self.encryption_key, algorithms=['HS256'])
         except Exception as e:
-            raise AuthenticationFailed(str(e))
+            raise AuthenticationFailed
 
     
