@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 
 from utils.validator import PostTicketPayload, Ticket, TicketUser
 
-from database.tickets import insert_ticket
+from database.tickets import insert_ticket, get_tickets_by_user_id
 from modules.decorator import ticket_user_required
 from socket_manager.send_events import send_create_channel_event
 
@@ -39,3 +39,11 @@ def create_ticket(ticket_user: TicketUser):
     send_create_channel_event(ticket_data)
 
     return jsonify(ticket_data.model_dump()), 201
+
+@bp_tickets.route('/', methods=['GET'])
+@ticket_user_required
+def get_tickets(ticket_user: TicketUser):
+    
+    tickets = get_tickets_by_user_id(ticket_user.id)
+
+    return jsonify([ticket.model_dump() for ticket in tickets]), 200
