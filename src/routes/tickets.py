@@ -5,7 +5,7 @@ from utils.exceptions import AuthenticationFailed, InternalServerError
 
 
 from database.tickets import insert_ticket, get_ticket
-
+from modules.decorator import ticket_user_required
 from socket_manager.send_events import send_create_channel_event
 
 
@@ -21,20 +21,14 @@ bp_tickets = Blueprint('tickets', __name__, url_prefix='/api/v1/tickets')
 
 
 @bp_tickets.route('/', methods=['POST'])
-def create_ticket():
+@ticket_user_required
+def create_ticket(ticket_user: TicketUser):
     # Validate the request payload
     ticket_payload = PostTicketPayload.model_validate(request.get_json())
 
     token = request.headers.get('Authorization', "")
     if not token:
         raise AuthenticationFailed
-
-    # if token is present, decrypt it and if failed raise AuthenticationFailed exception
-    user_data = jwt_enc.decrypt(token)
-    try:
-        ticket_user = TicketUser(id=user_data['user_id'], username=user_data['username'], email=user_data['email'], is_authenticated=user_data['is_authenticated'])
-    except KeyError:
-        raise InternalServerError("An unexpected error occurred. Field missing in token")
 
     # Create a ticket object
     ticket_data = Ticket(
