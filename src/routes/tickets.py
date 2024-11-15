@@ -1,13 +1,10 @@
 from flask import Blueprint, request, jsonify
 
 from utils.validator import PostTicketPayload, Ticket, TicketUser
-from utils.exceptions import AuthenticationFailed, InternalServerError
 
-
-from database.tickets import insert_ticket, get_ticket
+from database.tickets import insert_ticket
 from modules.decorator import ticket_user_required
 from socket_manager.send_events import send_create_channel_event
-
 
 from modules.auth import JWT
 from dotenv import load_dotenv
