@@ -44,6 +44,6 @@ def create_ticket(ticket_user: TicketUser):
 @ticket_user_required
 def get_tickets(ticket_user: TicketUser):
     
-    tickets = get_tickets_by_user_id(ticket_user.id)
+    tickets = get_tickets_by_user_id(ticket_user.id, status=["ACTIVE", "CLOSED", "PENDING"])
 
     return jsonify([ticket.model_dump() for ticket in tickets]), 200
