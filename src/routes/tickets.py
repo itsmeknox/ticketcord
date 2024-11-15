@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 
 from utils.validator import PostTicketPayload, Ticket, TicketUser
-from utils.exceptions import AuthenticationFailed
+from utils.exceptions import AuthenticationFailed, InternalServerError
 
 
 
@@ -21,19 +21,18 @@ def create_ticket():
     # Validate the request payload
     ticket_payload = PostTicketPayload.model_validate(request.get_json())
 
-    if ticket_payload.user is None:
-        token = request.headers.get('Authorization', "")
-        if not token:
-            raise AuthenticationFailed
-        
-        # if token is present, decrypt it and if failed raise AuthenticationFailed exception
-        user_data = jwt_enc.decrypt(token)
-        ticket_user = TicketUser(username=user_data['username'], email=user_data['email'], is_authenticated=True)
+    token = request.headers.get('Authorization', "")
+    if not token:
+        raise AuthenticationFailed
 
-    else:
-        ticket_user = TicketUser(username=ticket_payload.user.username, email=ticket_payload.user.email, is_authenticated=False)
+    # if token is present, decrypt it and if failed raise AuthenticationFailed exception
+    user_data = jwt_enc.decrypt(token)
+    try:
+        ticket_user = TicketUser(id=user_data['user_id'], username=user_data['username'], email=user_data['email'], is_authenticated=user_data['is_authenticated'])
+    except KeyError:
+        raise InternalServerError("An unexpected error occurred. Field missing in token")
 
-
+    # Create a ticket object
     ticket_data = Ticket(
         title=ticket_payload.title,
         description=ticket_payload.description,
