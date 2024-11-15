@@ -26,10 +26,6 @@ def create_ticket(ticket_user: TicketUser):
     # Validate the request payload
     ticket_payload = PostTicketPayload.model_validate(request.get_json())
 
-    token = request.headers.get('Authorization', "")
-    if not token:
-        raise AuthenticationFailed
-
     # Create a ticket object
     ticket_data = Ticket(
         title=ticket_payload.title,
