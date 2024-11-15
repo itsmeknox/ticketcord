@@ -24,3 +24,10 @@ class InternalServerError(APIException):
     def __init__(self, message: str | None) -> None:
         self.message = message if message else "500 Internal Server Error"
         super().__init__(message)
+
+
+class DatabaseError(APIException):
+    """Raised when an internal server error occurs."""
+    def __init__(self, message: str | None) -> None:
+        self.message = message if message else "500 Internal Server Error"
+        super().__init__(message)
