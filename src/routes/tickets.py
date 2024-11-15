@@ -6,6 +6,8 @@ from utils.exceptions import AuthenticationFailed, InternalServerError
 
 from database.tickets import insert_ticket, get_ticket
 
+from socket_manager.send_events import send_create_channel_event
+
 
 from modules.auth import JWT
 from dotenv import load_dotenv
@@ -42,11 +44,11 @@ def create_ticket():
         last_seen_message_id=None,
         status="ACTIVE"
     )
+
     # Need to add the data into database
     insert_ticket(ticket_data)
 
     # Need to send an socket event
-    
+    send_create_channel_event(ticket_data)
 
     return jsonify(ticket_data.model_dump()), 201
-
