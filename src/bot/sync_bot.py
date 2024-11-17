@@ -133,6 +133,19 @@ class SyncBot:
         }
         return self.request(route, payload=payload)
 
+    def create_category(self, guild_id: int, name: str, permission_overwrites: dict) -> dict:
+        route = Route("POST", f"guilds/{guild_id}/channels")
+        payload = {
+            "name": name,
+            "type": 4
+        }
+        if permission_overwrites:
+            payload["permission_overwrites"] = permission_overwrites
+
+        return self.request(route, payload=payload)
+
+
+
     def create_text_channel(
             self,
             guild_id: int,
@@ -142,7 +155,6 @@ class SyncBot:
             position: int = None,
             category_id: int = None,
             nsfw: bool = False,
-            **options
     ) -> dict:
         if len(name) > 100:
             raise ValueError("Channel name must be less than 100 characters")
@@ -201,3 +213,13 @@ class SyncBot:
                 return category_id
 
         return None
+    
+    def create_ticket(
+            self,
+            title: str,
+            description: str,
+            user_id: int,
+            user_name: str,
+            ticket_type: str
+    ):
+        category_id = self.get_available_ticket_category(categories=["CATEGORY_ID"], guild_id="GUILD_ID")
