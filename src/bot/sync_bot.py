@@ -35,7 +35,7 @@ class Route:
         return f"https://discord.com/api/v{API_VERSION}/{self.endpoint}"
 
 
-class Bot:
+class SyncBot:
     def __init__(self, token: str):
         self.token: str = token
         self.global_lock = threading.Lock()
