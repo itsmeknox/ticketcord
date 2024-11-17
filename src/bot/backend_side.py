@@ -189,7 +189,7 @@ class Bot:
         return category_channels
 
 
-    def get_available_category(self, categories: List[str], guild_id: str) -> Optional[int]:
+    def get_available_ticket_category(self, categories: List[str], guild_id: str) -> Optional[int]:
         MAX_CHANNELS_PER_CATEGORY = 50
 
         # Iterate through each category ID
