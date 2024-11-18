@@ -22,7 +22,6 @@ def ticket_user_required(func):
             raise AuthenticationFailed
 
         user_data = jwt_enc.decrypt(token)
-        print(user_data)
         try:
             ticket_user = TicketUser(id=user_data['id'], username=user_data['username'], email=user_data['email'], is_authenticated=user_data['is_authenticated'])
         except KeyError:
