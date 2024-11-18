@@ -50,10 +50,11 @@ class TicketHandlerBot:
         self.guild_id = settings.guild_id
         self.category_ids = settings.ticket_opening_category
         self.token = settings.bot_token
-    
+
     def add_new_category(self, category_id: int):
         self.category_ids.append(category_id)
-        settings.update_settings({"ticket_opening_category": self.category_ids})
+        settings.update_settings(
+            {"ticket_opening_category": self.category_ids})
 
     def request(self, route: Route, payload: Optional[Dict[str, Union[str, int, float, list, dict]]] = None, **kwargs) -> dict:
         headers: Dict[str, str] = {
@@ -120,7 +121,7 @@ class TicketHandlerBot:
                         f"Bucket-specific rate limit hit, retrying in {retry_after} seconds.")
                     time.sleep(retry_after)
                 continue
-            
+
             # Handle client-side error cases
             if response.status_code == 403:
                 raise Forbidden(response)
@@ -136,7 +137,6 @@ class TicketHandlerBot:
 
         raise RuntimeError("Failed to make request to Discord after retries")
 
-
     def create_text_channel(self, name: str, topic: str = None, category_id: int = None) -> dict:
         route = Route("POST", f"guilds/{self.guild_id}/channels")
         payload = {
@@ -147,17 +147,31 @@ class TicketHandlerBot:
         }
         return self.request(route, payload=payload)
 
-    def create_category(self, name: str, permission_overwrites: dict=None) -> dict:
+    def create_category(self, name: str) -> dict:
+        permission = [
+            {
+                "id": int(settings.support_team_role),
+                "type": 0,
+                "allow": "3072",
+                "deny": "0"
+            },
+            {
+                "id": "@everyone",
+                "type": 0,
+                "allow": "0",
+                "deny": "3072"
+            }
+        ]
+
         route = Route("POST", f"guilds/{self.guild_id}/channels")
         payload = {
             "name": name,
             "type": 4
         }
-        if permission_overwrites:
-            payload["permission_overwrites"] = permission_overwrites
+        
+        payload["permission_overwrites"] = permission
 
         return self.request(route, payload=payload)
-
 
     def create_text_channel(
             self,
@@ -196,22 +210,21 @@ class TicketHandlerBot:
             "parent_id": category_id,
             "nsfw": nsfw,
         }
-        
 
         # Remove None values from the payload
-        payload = {key: value for key, value in payload.items() if value is not None}
+        payload = {key: value for key,
+                   value in payload.items() if value is not None}
 
         return self.request(Route("POST", f"guilds/{self.guild_id}/channels"), payload=payload)
 
     def get_channels(self) -> List[dict]:
         return self.request(Route("GET", f"guilds/{self.guild_id}/channels"))
 
-
     def get_category_channels(self, category_id: int) -> dict:
         channels = self.get_channels(guild_id=self.guild_id)
-        category_channels = [channel for channel in channels if channel.get("parent_id") == str(category_id)]
+        category_channels = [channel for channel in channels if channel.get(
+            "parent_id") == str(category_id)]
         return category_channels
-
 
     def get_available_ticket_category(self) -> Optional[int]:
         MAX_CHANNELS_PER_CATEGORY = 50
@@ -219,7 +232,8 @@ class TicketHandlerBot:
         # Iterate through each category ID
         channels = self.get_channels(guild_id=self.guild_id)
         for category_id in self.category_ids:
-            channels_in_category = [channel for channel in channels if channel.get("parent_id") == str(category_id)]
+            channels_in_category = [channel for channel in channels if channel.get(
+                "parent_id") == str(category_id)]
 
             if len(channels_in_category) < MAX_CHANNELS_PER_CATEGORY:
                 return category_id
@@ -230,16 +244,16 @@ class TicketHandlerBot:
         category_id = self.get_available_ticket_category()
         if category_id:
             return category_id
-        
-        category_id = int(self.create_category(name=f"Category {len(self.category_ids) + 1}")['id'])
+
+        category_id = int(self.create_category(
+            name=f"Category {len(self.category_ids) + 1}")['id'])
         self.add_new_category(category_id)
         return category_id
-    
 
     def send_message(self, channel_id, content: str, embed: Embed, embeds: List[Embed]):
         if embed and embeds:
             raise ValueError("Cannot send both embed and embeds")
-        
+
         if embed:
             embeds = [embed]
 
@@ -251,7 +265,6 @@ class TicketHandlerBot:
         }
         return self.request(Route("POST", f"channels/{channel_id}/messages"), payload=payload)
 
-    
     def create_ticket(
             self,
             title: str,
@@ -262,8 +275,8 @@ class TicketHandlerBot:
             ticket_type: str
     ):
         category_id = self.assign_category()
-        channel = self.create_text_channel(name=f"{ticket_type}-{user_name}", category_id=category_id)
-
+        channel = self.create_text_channel(
+            name=f"{ticket_type}-{user_name}", category_id=category_id)
 
         embed = Embed(
             title=title,
@@ -282,6 +295,6 @@ class TicketHandlerBot:
         )
 
         return channel['id']
-    
+
 
 ticket_handler = TicketHandlerBot()
