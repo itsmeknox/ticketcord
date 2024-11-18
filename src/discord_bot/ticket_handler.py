@@ -43,8 +43,7 @@ class TicketManager:
             "ticket_opening_categories": self.category_ids
          })
 
-    @call_async_func
-    async def initialize(self) -> None:
+    def initialize(self) -> None:
         guild_id = os.getenv("GUILD_ID")
         if not guild_id:
             raise ValueError("GUILD_ID environment variable is not set.")
@@ -53,7 +52,10 @@ class TicketManager:
         if not self.guild:
             raise ValueError(f"Guild with ID {guild_id} not found.")
         
-        
+        self.support_team_role = self.guild.get_role(guild_settings.support_team_role_id)
+        if not self.support_team_role:
+            raise ValueError("Support team role not found in the guild.")
+
 
     async def get_ticket_category_id(self):
         if not self.guild:
@@ -100,13 +102,9 @@ class TicketManager:
             icon_url=self.guild.icon.url if self.guild.icon else None
         )
 
-        # Check if support team role exists
-        support_team_role = guild_settings.support_team_role
-        if not support_team_role:
-            raise ValueError("Support team role is not set in settings.")
-        
+
         await channel.send(
-            content=f"<@&{support_team_role}> A new ticket has been opened. Please review the details below.",
+            content=f"<@&{self.support_team_role.mention}> A new ticket has been opened. Please review the details below.",
             embed=embed
         )
 
