@@ -1,11 +1,17 @@
 from flask import Flask
 
-import routes.tickets
-app = Flask(__name__)
 
-import routes
 
 from utils.exceptions import InternalServerError, AuthenticationFailed
+from dotenv import load_dotenv
+
+
+import os
+import routes
+
+load_dotenv()
+app = Flask(__name__)
+
 
 app.register_blueprint(routes.tickets.bp_tickets)
 
