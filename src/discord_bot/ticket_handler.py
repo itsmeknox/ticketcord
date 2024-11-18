@@ -9,7 +9,7 @@ class User:
     username: str
     id: int
 
-from utils.settings import settings
+from utils.settings import guild_settings
 
 
 def call_async_func(func):
@@ -39,6 +39,9 @@ class TicketManager:
 
     def append_category_id(self, category_id: int):
         self.category_ids.append(category_id)
+        guild_settings.update_settings({ 
+            "ticket_opening_categories": self.category_ids
+         })
 
     @call_async_func
     async def initialize(self) -> None:
@@ -49,6 +52,8 @@ class TicketManager:
         self.guild = self.bot.get_guild(int(guild_id))
         if not self.guild:
             raise ValueError(f"Guild with ID {guild_id} not found.")
+        
+        
 
     async def get_ticket_category_id(self):
         if not self.guild:
@@ -96,7 +101,7 @@ class TicketManager:
         )
 
         # Check if support team role exists
-        support_team_role = settings.support_team_role
+        support_team_role = guild_settings.support_team_role
         if not support_team_role:
             raise ValueError("Support team role is not set in settings.")
         
