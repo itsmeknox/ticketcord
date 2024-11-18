@@ -119,7 +119,6 @@ class TicketHandlerBot:
                     time.sleep(retry_after)
                 continue
             
-            print(response.json())
             # Handle client-side error cases
             if response.status_code == 403:
                 raise Forbidden(response)
@@ -134,6 +133,7 @@ class TicketHandlerBot:
                 raise HTTPException(response)
 
         raise RuntimeError("Failed to make request to Discord after retries")
+
 
     def create_text_channel(self, name: str, topic: str = None, category_id: int = None) -> dict:
         route = Route("POST", f"guilds/{self.guild_id}/channels")
@@ -223,7 +223,7 @@ class TicketHandlerBot:
                 return category_id
 
         return None
-    
+
     def assign_category(self):
         category_id = self.get_available_ticket_category()
         if category_id:
