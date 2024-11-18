@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from database.tickets import insert_message
+from database.messages import insert_message
 from modules.decorator import ticket_user_required
 from utils.validator import Message, TicketUser, PostMessagePayload, MessageUser
 bp_messages = Blueprint('messages', __name__, url_prefix='/api/v1/tickets/<int:ticket_id>/messages')
