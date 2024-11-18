@@ -2,6 +2,8 @@ from discord.ext import commands
 import discord
 import os
 import threading
+import asyncio
+import threading
 
 from .ticket_handler import TicketManager
 
@@ -11,6 +13,29 @@ bot = commands.Bot(intents=discord.Intents.all())
 ticket_manager = TicketManager(bot=bot)
 
 is_running = threading.Event()
+
+bot_lock = threading.Lock()
+
+def bot_run_async_coroutine(coro):
+    """
+    Runs a coroutine object on the bot's event loop.
+    
+    Args:
+        coro (coroutine): The coroutine object to execute.
+        
+    Returns:
+        Any: The result of the coroutine, or raises an exception if it fails.
+    """
+    bot_lock.acquire()
+    future = asyncio.run_coroutine_threadsafe(coro, bot.loop)
+    try:
+        return future.result(timeout=10)  # Adjust timeout as needed
+    except Exception as e:
+        raise e
+    
+    finally:
+        bot_lock.release()
+
 
 @bot.event
 async def on_ready():
