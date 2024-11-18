@@ -16,8 +16,11 @@ is_running = threading.Event()
 async def on_ready():
     global is_running
     is_running.set()
-    print(f"Logged in as {bot.user}")
+    print(f"Succesfully logged in as {bot.user}")
     ticket_manager.initialize()
+
+
+
 
 
 
