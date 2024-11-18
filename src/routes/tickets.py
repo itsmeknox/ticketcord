@@ -7,6 +7,7 @@ from utils.validator import (
 )
 from modules.decorator import ticket_user_required
 from discord_bot.app import ticket_manager, bot_run_async_coroutine
+from database.tickets import insert_ticket
 
 from modules.auth import JWT
 from dotenv import load_dotenv
@@ -39,7 +40,6 @@ def create_ticket(ticket_user: TicketUser):
         description=ticket_payload.description,
         user=ticket_user
     ))
-
     
     ticket_data = Ticket(
         id=channel_id,
@@ -51,6 +51,7 @@ def create_ticket(ticket_user: TicketUser):
         status="ACTIVE"
     )
 
+    insert_ticket(ticket_data)
 
 
     return jsonify(ticket_data.model_dump(exclude="webhook_url")), 201
