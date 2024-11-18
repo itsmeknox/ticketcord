@@ -36,8 +36,6 @@ class Settings:
         if not data:
             raise ValueError("Settings not found in the database")
         
-        self.bot_token: str = data["bot_token"]
-        self.guild_id: int = data["guild_id"]
         self.ticket_opening_category: list = data["ticket_opening_category"]
         self.ticket_closing_category: int = data["ticket_closing_category"]
         self.ticket_transcript_channel: int = data["ticket_transcript_channel"]
