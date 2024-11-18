@@ -5,7 +5,7 @@ from typing_extensions import List
 class GuildSettings:
     def __init__(self):
         self.db = get_database()
-        self.collection = self.db["guild_settings"]
+        self.collection = self.db["settings"]
         self._initialize()
 
     def _initialize(self):
@@ -24,7 +24,8 @@ class GuildSettings:
 
 
     def load_settings(self):
-        if data := self.collection.find_one({"id": "guild_settings"}) is None:
+        data = self.collection.find_one({"id": "guild_settings"})
+        if data is None:
             raise ValueError("Settings not found in the database")
 
         try:
