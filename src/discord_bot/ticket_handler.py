@@ -9,7 +9,7 @@ class User:
     username: str
     id: int
 
-from src.utils.settings import settings
+from utils.settings import settings
 
 
 def call_async_func(func):
@@ -36,13 +36,12 @@ class TicketManager:
         self.category_ids = []
         self.guild = None
 
-        self._initialize()
 
     def append_category_id(self, category_id: int):
         self.category_ids.append(category_id)
 
     @call_async_func
-    async def _initialize(self) -> None:
+    async def initialize(self) -> None:
         guild_id = os.getenv("GUILD_ID")
         if not guild_id:
             raise ValueError("GUILD_ID environment variable is not set.")
