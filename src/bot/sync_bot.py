@@ -8,6 +8,8 @@ import json
 from typing_extensions import Literal, Dict, Union, Optional, List
 from discord.errors import HTTPException, Forbidden, NotFound, DiscordServerError
 
+from utils.settings import settings
+
 
 API_VERSION: int = 10
 
@@ -36,16 +38,20 @@ class Route:
 
 
 class TicketHandlerBot:
-    def __init__(self, token: str, guild_id: int, category_ids: List[int]):
-        self.guild_id = guild_id
-        self.category_ids = category_ids
-
-        self.token: str = token
+    def __init__(self):
         self.global_lock = threading.Lock()
         self.global_rate_limit_reset: float = 0
+
+        self._load_settings()
+
+    def _load_settings(self):
+        self.guild_id = settings.guild_id
+        self.category_ids = settings.ticket_opening_category
+        self.token = settings.bot_token
     
     def add_new_category(self, category_id: int):
         self.category_ids.append(category_id)
+        settings.update_settings({"ticket_opening_category": self.category_ids})
 
     def request(self, route: Route, payload: Optional[Dict[str, Union[str, int, float, list, dict]]] = None, **kwargs) -> dict:
         headers: Dict[str, str] = {
