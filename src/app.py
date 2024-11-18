@@ -2,6 +2,7 @@ from flask import Flask
 
 
 
+import routes.messages
 import routes.tickets
 from utils.exceptions import InternalServerError, AuthenticationFailed
 from dotenv import load_dotenv
@@ -18,6 +19,7 @@ load_dotenv()
 app = Flask(__name__)
 
 app.register_blueprint(routes.tickets.bp_tickets)
+app.register_blueprint(routes.messages.bp_messages)
 
 
 @app.errorhandler(AuthenticationFailed)
