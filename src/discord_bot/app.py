@@ -26,15 +26,12 @@ def bot_run_async_coroutine(coro):
     Returns:
         Any: The result of the coroutine, or raises an exception if it fails.
     """
-    bot_lock.acquire()
-    future = asyncio.run_coroutine_threadsafe(coro, bot.loop)
-    try:
-        return future.result(timeout=10)  # Adjust timeout as needed
-    except Exception as e:
-        raise e
-    
-    finally:
-        bot_lock.release()
+    with bot_lock:
+        future = asyncio.run_coroutine_threadsafe(coro, bot.loop)
+        try:
+            return future.result(timeout=10)  # Adjust timeout as needed
+        except Exception as e:
+            raise e
 
 
 @bot.event
