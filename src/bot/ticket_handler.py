@@ -255,3 +255,6 @@ class TicketHandlerBot:
         # self.send_message()
 
         return channel['id']
+    
+
+ticket_handler = TicketHandlerBot()
