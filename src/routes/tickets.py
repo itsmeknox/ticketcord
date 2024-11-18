@@ -6,11 +6,16 @@ from database.tickets import insert_ticket, get_tickets_by_user_id
 from modules.decorator import ticket_user_required
 from socket_manager.send_events import send_create_channel_event
 
+from bot.ticket_handler import ticket_handler
+
+
 from modules.auth import JWT
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
+
+
 
 jwt_enc = JWT(encryption_key=os.getenv('SECRET_KEY'))
 
