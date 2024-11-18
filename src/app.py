@@ -30,7 +30,8 @@ def handle_internal_server_error(e: InternalServerError):
 
 
 def run_app():
-    if PORT := os.getenv("WEB_SERVER_PORT") is None:
+    PORT = os.getenv("WEB_SERVER_PORT")
+    if PORT is None:
         raise ValueError("WEB_SERVER_PORT is not set in the environment variables")
     
         
