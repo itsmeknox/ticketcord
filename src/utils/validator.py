@@ -25,4 +25,5 @@ class Ticket(BaseModel):
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     last_seen_message_id: Optional[int] = None
     is_resolved: bool = False
+    webhook_url: str
     status: Literal["ACTIVE", "DELETED", "CLOSED", "PENDING"]
