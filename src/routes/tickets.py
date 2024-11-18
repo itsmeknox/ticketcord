@@ -6,7 +6,7 @@ from utils.validator import (
     TicketUser
 )
 from modules.decorator import ticket_user_required
-from discord_bot.app import ticket_manager, run_async_coroutine
+from discord_bot.app import ticket_manager, bot_run_async_coroutine
 
 from modules.auth import JWT
 from dotenv import load_dotenv
@@ -33,7 +33,7 @@ def create_ticket(ticket_user: TicketUser):
     # Create a ticket object
 
     
-    channel_id, webhook_url = run_async_coroutine(
+    channel_id, webhook_url = bot_run_async_coroutine(
         ticket_manager.create_ticket(
         ticket_payload.title,
         description=ticket_payload.description,
