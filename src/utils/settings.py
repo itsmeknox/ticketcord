@@ -33,6 +33,9 @@ class Settings:
 
     def load_settings(self):
         data = self.collection.find_one({"id": "settings"})
+        if not data:
+            raise ValueError("Settings not found in the database")
+        
         self.bot_token: str = data["bot_token"]
         self.guild_id: int = data["guild_id"]
         self.ticket_opening_category: list = data["ticket_opening_category"]
