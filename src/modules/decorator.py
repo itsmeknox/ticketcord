@@ -11,7 +11,7 @@ import os
 
 load_dotenv()
 
-jwt_enc = JWT(encryption_key=os.getenv('CLIENT_SIDE_JWT_TOKEN_SECRET'))
+jwt_enc = JWT(encryption_key=os.getenv('JWT_SECRET_KEY'))
 
 
 def ticket_user_required(func):
@@ -22,8 +22,9 @@ def ticket_user_required(func):
             raise AuthenticationFailed
 
         user_data = jwt_enc.decrypt(token)
+        print(user_data)
         try:
-            ticket_user = TicketUser(id=user_data['user_id'], username=user_data['username'], email=user_data['email'], is_authenticated=user_data['is_authenticated'])
+            ticket_user = TicketUser(id=user_data['id'], username=user_data['username'], email=user_data['email'], is_authenticated=user_data['is_authenticated'])
         except KeyError:
             raise InternalServerError("An unexpected error occurred. Fields are missing in token")
 
