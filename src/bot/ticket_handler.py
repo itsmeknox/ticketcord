@@ -10,6 +10,8 @@ from discord.errors import HTTPException, Forbidden, NotFound, DiscordServerErro
 
 from utils.settings import settings
 
+from discord import Embed
+
 
 API_VERSION: int = 10
 
@@ -234,10 +236,20 @@ class TicketHandlerBot:
         return category_id
     
 
-    def send_message(self, data: dict):...
-    #     route = Route("POST", f"channels/{data['channel_id']}/messages")
-    #     return self.request(route, payload=data)
-    
+    def send_message(self, channel_id, content: str, embed: Embed, embeds: List[Embed]):
+        if embed and embeds:
+            raise ValueError("Cannot send both embed and embeds")
+        
+        if embed:
+            embeds = [embed]
+
+        embeds = [embed.to_dict() for embed in embeds]
+
+        payload = {
+            "content": content,
+            "embeds": embeds
+        }
+        return self.request(Route("POST", f"channels/{channel_id}/messages"), payload=payload)
 
     
     def create_ticket(
@@ -246,13 +258,28 @@ class TicketHandlerBot:
             description: str,
             user_id: int,
             user_name: str,
+            user_email: str,
             ticket_type: str
     ):
         category_id = self.assign_category()
         channel = self.create_text_channel(name=f"{ticket_type}-{user_name}", category_id=category_id)
 
 
-        # self.send_message()
+        embed = Embed(
+            title=title,
+            description=description,
+            color=0x00ff00
+        )
+        embed.add_field(
+            name="User",
+            value=f"Username: {user_name}\nUser ID: {user_id}\nEmail: {user_email}",
+        )
+        embed.set_footer(text=f"{ticket_type.title()} Ticket")
+        self.send_message(
+            channel['id'],
+            content=f"Ticket created by {user_name} (<@{settings.support_team_role}>)",
+            embed=embed
+        )
 
         return channel['id']
     
