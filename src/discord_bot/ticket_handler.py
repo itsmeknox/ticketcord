@@ -55,6 +55,8 @@ class TicketManager:
         self.support_team_role = self.guild.get_role(guild_settings.support_team_role_id)
         if not self.support_team_role:
             raise ValueError("Support team role not found in the guild.")
+        
+        self.category_ids = guild_settings.ticket_opening_categories
 
 
     async def get_ticket_category_id(self):
