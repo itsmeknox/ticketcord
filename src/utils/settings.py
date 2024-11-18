@@ -42,6 +42,7 @@ class Settings:
         self.ticket_closing_category: int = data["ticket_closing_category"]
         self.ticket_transcript_channel: int = data["ticket_transcript_channel"]
         self.server_log_channel: int = data["server_log_channel"]
+        self.support_team_role: int = data["support_team_role"]
 
     def update_settings(self, data: dict) -> bool:
         self.collection.update_one({"id": "settings"}, {"$set": data})
