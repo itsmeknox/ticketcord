@@ -17,12 +17,13 @@ async def on_ready():
     global is_running
     is_running.set()
     print(f"Logged in as {bot.user}")
-    await ticket_manager.initialize()
+    ticket_manager.initialize()
 
 
 
 def run_bot():
-    if BOT_TOKEN := os.getenv("BOT_TOKEN") is None:
+    BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+    if BOT_TOKEN is None:
         raise ValueError("BOT_TOKEN is not set in the environment variables")
     
     def run():
