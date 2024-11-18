@@ -1,33 +1,10 @@
-from discord import Guild, Embed, CategoryChannel, Bot
-from dotenv import load_dotenv
-from functools import wraps
-import os
-import asyncio
-
-class User:
-    email: str
-    username: str
-    id: int
-
+from discord import Embed, CategoryChannel, Bot
+from utils.validator import TicketUser
 from utils.settings import guild_settings
+import os
 
 
-def call_async_func(func):
-    """
-    A decorator to run async functions in a synchronous context without 'await'.
-    """
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:  # No running event loop
-            loop = None
 
-        if loop and loop.is_running():
-            return asyncio.create_task(func(*args, **kwargs))
-        else:
-            return asyncio.run(func(*args, **kwargs))
-    return wrapper
 
 
 class TicketManager:
@@ -77,13 +54,13 @@ class TicketManager:
         self.append_category_id(category.id)
         return category
 
-    @call_async_func
+
     async def create_ticket(
-        self, title: str, description: str, user: User
+        self, title: str, description: str, user: TicketUser
     ) -> int:
         if not self.guild:
             raise ValueError("Guild not initialized. Call `initialize` first.")
-        
+
         category = await self.get_ticket_category_id()
         channel = await category.create_text_channel(
             name=f"{user.username}-ticket",
@@ -92,11 +69,11 @@ class TicketManager:
 
         embed = Embed(
             title="Ticket Information",
-            description=f"**Title:** {title}\n**Description:** {description}"
+            description=f"Title: ``{title}``\nDescription: ``{description}``"
         )
         embed.add_field(
             name="User Information",
-            value=f"**Username:** {user.username}\n**Email:** {user.email}\n**ID:** {user.id}"
+            value=f"Username: ``{user.username}``\nEmail: ``{user.email}``\nID: ``{user.id}``"
         )
         embed.set_footer(text=self.guild.name)
         embed.set_author(
@@ -106,8 +83,10 @@ class TicketManager:
 
 
         await channel.send(
-            content=f"<@&{self.support_team_role.mention}> A new ticket has been opened. Please review the details below.",
+            content=f"{self.support_team_role.mention} A new ticket has been opened. Please review the details below.",
             embed=embed
         )
+        
+        webhook = await channel.create_webhook(name=user.username, reason="Ticket webhook")
 
-        return channel.id
+        return channel.id, webhook.url
