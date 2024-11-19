@@ -1,26 +1,47 @@
 from flask import Flask, jsonify
+from flask_socketio import SocketIO
+from flask_cors import CORS
 
 
 
-import routes.messages
-import routes.tickets
-from utils.exceptions import InternalServerError, AuthenticationFailed
 from dotenv import load_dotenv
-
 from pydantic import ValidationError
 from waitress import serve
 from discord_bot import run_bot
 
-import json
-import routes
-import os
 
+from utils.exceptions import (
+    InternalServerError, 
+    AuthenticationFailed
+)
+
+from routes.messages import bp_messages
+from routes.tickets import bp_tickets
+from socket_manager.handler import SocketHandler
+from socket_manager.send_events import socket_sio_init
+
+
+import json
+import os
 
 load_dotenv()
 app = Flask(__name__)
 
-app.register_blueprint(routes.tickets.bp_tickets)
-app.register_blueprint(routes.messages.bp_messages)
+CORS(app, resources={r"/*": {"origins": "*"}}, cors_allowed_origins="*")
+
+
+def setup_socketio() -> SocketIO:
+    sio = SocketIO(app, cors_allowed_origins="*")
+    socket_sio_init(sio)
+    sio.on_namespace(SocketHandler(namespace="/"))
+    return sio
+
+def register_blueprints():
+    app.register_blueprint(bp_tickets)
+    app.register_blueprint(bp_messages)
+
+setup_socketio()
+register_blueprints()
 
 
 @app.errorhandler(AuthenticationFailed)
@@ -66,4 +87,3 @@ def run_app():
 if __name__ == '__main__':
     run_bot()
     run_app()
- 
