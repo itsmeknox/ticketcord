@@ -4,6 +4,12 @@ from .helper import generate_snowflake_id, generate_timestamp
 from .enums import UserRole, TicketStatus
 
 # Database Schema
+class TicketUser(BaseModel):
+    id: int
+    username: str
+    email: str
+    role: UserRole
+
 
 # User Model
 class User(BaseModel):
