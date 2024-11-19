@@ -33,7 +33,7 @@ CORS(app, resources={r"/*": {"origins": "*"}}, cors_allowed_origins="*")
 def setup_socketio() -> SocketIO:
     sio = SocketIO(app, cors_allowed_origins="*")
     socket_sio_init(sio)
-    sio.on_namespace(SocketHandler(namespace="/"))
+    sio.on_namespace(SocketHandler())
     return sio
 
 def register_blueprints():
@@ -54,6 +54,7 @@ def handle_internal_server_error(e: InternalServerError):
 
 @app.errorhandler(ValidationError)
 def validation_error(e: ValidationError):
+    print(e.title)
     errors = []
     
     error_list = json.loads(e.json(include_url=False))
