@@ -1,6 +1,6 @@
 from utils.mongo_client import get_database
 
-from utils.validator import (
+from utils.schema import (
     Message
 )
 
