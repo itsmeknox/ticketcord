@@ -1,4 +1,4 @@
-from utils.validator import Ticket, Message
+from utils.schema import Ticket
 from typing_extensions import List
 from utils.mongo_client import get_database
 
