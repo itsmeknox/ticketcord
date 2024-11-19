@@ -39,7 +39,7 @@ jwt_enc = JWT(encryption_key=os.getenv('JWT_SECRET_KEY'))
 bp_tickets = Blueprint('tickets', __name__, url_prefix='/api/v1/tickets')
 
 
-@bp_tickets.route('/', methods=['POST'])
+@bp_tickets.route('', methods=['POST'])
 @ticket_user_required
 def create_ticket(ticket_user: TicketUser):
     # Validate the request payload
@@ -55,20 +55,26 @@ def create_ticket(ticket_user: TicketUser):
     except DiscordException as e:
         return jsonify({"error": str(e)}), 500  
     
+    print(channel_id)
+    
     ticket_data = Ticket(
-        id=channel_id,
+        id=str(channel_id),
         user_id=ticket_user.id,
         user_email=ticket_user.email,
         username=ticket_user.username,
+        channel_id=channel_id,
         user_role=ticket_user.role,
         topic=ticket_payload.topic,
         description=ticket_payload.description,
         webhook_url=webhook_url
     )
 
-    insert_ticket(ticket_data)
 
-    return jsonify(TicketResponse(**ticket_data.model_dump()).model_dump()), 201
+    insert_ticket(ticket_data)
+    data = TicketResponse(**ticket_data.model_dump()).model_dump()
+
+    print(data)
+    return jsonify(data), 201
 
 
 @bp_tickets.route('/<int:ticket_id>', methods=['GET'])
@@ -86,10 +92,10 @@ def get_ticket(ticket_user: TicketUser, ticket_id: int):
 
 
 
-@bp_tickets.route('/', methods=['GET'])
+@bp_tickets.route('', methods=['GET'])
 @ticket_user_required
 def get_tickets(ticket_user: TicketUser):
-    tickets: List[Ticket] = fetch_user_tickets(ticket_user.id, status=[TicketStatus.ACTIVE, TicketStatus.CLOSED])
+    tickets: List[Ticket] = fetch_user_tickets(ticket_user.id, status=[TicketStatus.ACTIVE,])
 
     ticket_list = [TicketResponse(**ticket.model_dump()).model_dump() for ticket in tickets]
     

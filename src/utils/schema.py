@@ -5,14 +5,14 @@ from .enums import UserRole, TicketStatus
 
 # Database Schema
 class TicketUser(BaseModel):
-    id: int
+    id: str
     username: str
     email: str
     role: UserRole
     
 # User Model
 class User(BaseModel):
-    id: int = Field(default_factory=generate_snowflake_id, description="Unique user ID")
+    id: str = Field(default_factory=generate_snowflake_id, description="Unique user ID")
     username: str = Field(..., min_length=3, max_length=50, description="User's username")
     email: EmailStr = Field(..., description="User's email address")
     role: UserRole = Field(UserRole.CUSTOMER, description="User role: CUSTOMER, AGENT, or ADMIN")
@@ -23,9 +23,9 @@ class User(BaseModel):
 # Ticket Model
 class Ticket(BaseModel):
     # id: int = Field(default_factory=generate_snowflake_id, description="Unique ticket ID")
-    id: int = Field(..., description="Unique identifier for the Discord channel/thread associated with the ticket")
+    id: str = Field(..., description="Unique identifier for the Discord channel/thread associated with the ticket")
 
-    user_id: int = Field(..., description="ID of the user who raised the ticket")
+    user_id: str = Field(..., description="ID of the user who raised the ticket")
     user_email: EmailStr = Field(..., description="User's email address")
     username: str = Field(..., min_length=3, max_length=50, description="User's username")
 
@@ -41,9 +41,9 @@ class Ticket(BaseModel):
 
 # Message Model
 class Message(BaseModel):
-    id: int = Field(default_factory=generate_snowflake_id, description="Unique message ID")
-    ticket_id: int = Field(..., description="Associated ticket ID")
-    author_id: int = Field(..., description="ID of the user who sent the message")
+    id: str = Field(default_factory=generate_snowflake_id, description="Unique message ID")
+    ticket_id: str = Field(..., description="Associated ticket ID")
+    author_id: str = Field(..., description="ID of the user who sent the message")
     author_name: str = Field(..., min_length=2, max_length=50, description="Username of the message sender")
     content: str = Field(..., description="Message content")
     attachments: List[str] = Field(default_factory=list, description="List of attachment URLs")
@@ -71,8 +71,8 @@ class SendMessageRequest(BaseModel):
 
 # ============== API Response ==============
 class TicketResponse(BaseModel):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     # channel_id: int
     topic: Optional[str]
     description: Optional[str]
@@ -85,8 +85,8 @@ class TicketsResponse(BaseModel):
     
 
 class MessageResponse(BaseModel):
-    id: int
-    ticket_id: int
+    id: str
+    ticket_id: str
     author_id: int
     author_name: str
     content: str

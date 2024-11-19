@@ -11,8 +11,8 @@ import functools
 gen = SnowflakeGenerator(0)
 
 
-def generate_snowflake_id() -> int:
-    return next(gen)
+def generate_snowflake_id() -> str:
+    return str(next(gen))
 
 def generate_timestamp() -> int:
     return int(time.time())
@@ -67,10 +67,6 @@ def send_webhook_message(
 
         try:
             response = webhook.execute()
-            if response.status_code != 200:
-                print(f"Webhook failed with status code {response.status_code}: {response.content}")
-                return False
-
         except Exception as e:
             print(f"Error sending webhook message: {e}")
             return False

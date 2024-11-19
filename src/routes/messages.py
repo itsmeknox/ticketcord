@@ -17,9 +17,9 @@ bp_messages = Blueprint('messages', __name__, url_prefix='/api/v1/tickets')
 
 
 
-@bp_messages.route('/<int:ticket_id>/messages', methods=['POST'])
+@bp_messages.route('/<ticket_id>/messages', methods=['POST'])
 @ticket_user_required
-def create_message(ticket_user: TicketUser, ticket_id: int):
+def create_message(ticket_user: TicketUser, ticket_id: str):
     ticket = fetch_ticket(
         ticket_id=ticket_id,
         user_id=ticket_user.id
@@ -47,14 +47,15 @@ def create_message(ticket_user: TicketUser, ticket_id: int):
     return jsonify(MessageResponse(**message.model_dump()).model_dump()), 201
 
 
-@bp_messages.route('/<int:ticket_id>/messages', methods=['GET'])
+@bp_messages.route('/<ticket_id>/messages', methods=['GET'])
 @ticket_user_required
-def get_messages(ticket_user: TicketUser, ticket_id: int):
+def get_messages(ticket_user: TicketUser, ticket_id: str):
+    
     ticket = fetch_ticket(
         ticket_id=ticket_id,
         user_id=ticket_user.id
     )
-    if not ticket:
+    if ticket is None:
         return jsonify({"error": "Ticket not found"}), 404
     
     messages = fetch_messages(ticket_id)
