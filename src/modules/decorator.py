@@ -3,8 +3,9 @@ from functools import wraps
 from flask import request
 from dotenv import load_dotenv
 from utils.exceptions import AuthenticationFailed, InternalServerError
-from utils.validator import TicketUser
+from utils.schema import TicketUser
 
+from pydantic import ValidationError
 from modules.auth import JWT
 
 import os
@@ -23,8 +24,8 @@ def ticket_user_required(func):
 
         user_data = jwt_enc.decrypt(token)
         try:
-            ticket_user = TicketUser(id=user_data['id'], username=user_data['username'], email=user_data['email'], is_authenticated=user_data['is_authenticated'])
-        except KeyError:
+            ticket_user = TicketUser(**user_data)
+        except ValidationError:
             raise InternalServerError("An unexpected error occurred. Fields are missing in token")
 
         return func(ticket_user, *args, **kwargs)
