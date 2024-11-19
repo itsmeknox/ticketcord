@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from modules.decorator import ticket_user_required
 from database.messages import insert_message, fetch_messages
 from database.tickets import fetch_ticket
+from utils.helper import send_webhook_message
 
 from utils.schema import (
     Message, 
@@ -35,6 +36,11 @@ def create_message(ticket_user: TicketUser, ticket_id: int):
     )
 
     insert_message(message)
+    send_webhook_message(
+        url=ticket.webhook_url,
+        content=message.content,
+        run_as_thread=True
+        )
 
     return jsonify(MessageResponse(**message.model_dump()).model_dump()), 201
 
