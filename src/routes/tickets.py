@@ -1,4 +1,10 @@
 from flask import Blueprint, request, jsonify
+from typing_extensions import List
+
+
+from discord.errors import DiscordException
+from modules.decorator import ticket_user_required
+from modules.auth import JWT
 
 from utils.schema import (
     CreateTicketRequest, 
@@ -6,17 +12,23 @@ from utils.schema import (
     TicketUser,
     TicketResponse
 )
-from modules.decorator import ticket_user_required
-from discord_bot.app import ticket_manager, bot_run_async_coroutine
-from database.tickets import insert_ticket, fetch_ticket, fetch_user_tickets
 
-from modules.auth import JWT
-from dotenv import load_dotenv
+
+
+from discord_bot.app import (
+    ticket_manager, 
+    bot_run_async_coroutine
+)
+
+from database.tickets import (
+    insert_ticket, 
+    fetch_ticket, 
+    fetch_user_tickets
+)
+
+
 import os
 import threading
-
-load_dotenv()
-
 
 
 
@@ -32,13 +44,15 @@ def create_ticket(ticket_user: TicketUser):
     # Validate the request payload
     ticket_payload = CreateTicketRequest.model_validate(request.get_json())
 
-    
-    channel_id, webhook_url = bot_run_async_coroutine(
+    try:
+        channel_id, webhook_url = bot_run_async_coroutine(
         ticket_manager.create_ticket(
         ticket_payload.topic,
         description=ticket_payload.description,
         user=ticket_user
     ))
+    except DiscordException as e:
+        return jsonify({"error": str(e)}), 500  
     
     ticket_data = Ticket(
         user_id=ticket_user.id,
@@ -50,8 +64,8 @@ def create_ticket(ticket_user: TicketUser):
 
     insert_ticket(ticket_data)
     
-
     return jsonify(TicketResponse(**ticket_data.model_dump()).model_dump()), 201
+
 
 @bp_tickets.route('/<int:ticket_id>', methods=['GET'])
 @ticket_user_required
@@ -67,10 +81,11 @@ def get_ticket(ticket_user: TicketUser, ticket_id: int):
     return jsonify(TicketResponse(**ticket_data.model_dump()).model_dump()), 200
 
 
+
 @bp_tickets.route('/', methods=['GET'])
 @ticket_user_required
 def get_tickets(ticket_user: TicketUser):
-    tickets = fetch_user_tickets(ticket_user.id)
+    tickets: List[Ticket] = fetch_user_tickets(ticket_user.id)
 
     ticket_list = [TicketResponse(**ticket.model_dump()).model_dump() for ticket in tickets]
     
