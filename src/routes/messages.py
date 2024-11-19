@@ -4,6 +4,8 @@ from database.messages import insert_message, fetch_messages
 from database.tickets import fetch_ticket
 from utils.helper import send_webhook_message
 
+
+
 from utils.schema import (
     Message, 
     TicketUser, 
@@ -11,11 +13,11 @@ from utils.schema import (
     MessageResponse
 )
 
-bp_messages = Blueprint('messages', __name__, url_prefix='/api/v1/tickets/<int:ticket_id>/messages')
+bp_messages = Blueprint('messages', __name__, url_prefix='/api/v1/tickets')
 
 
 
-@bp_messages.route('/', methods=['POST'])
+@bp_messages.route('/<int:ticket_id>/messages', methods=['POST'])
 @ticket_user_required
 def create_message(ticket_user: TicketUser, ticket_id: int):
     ticket = fetch_ticket(
@@ -45,7 +47,7 @@ def create_message(ticket_user: TicketUser, ticket_id: int):
     return jsonify(MessageResponse(**message.model_dump()).model_dump()), 201
 
 
-@bp_messages.route('/', methods=['GET'])
+@bp_messages.route('/<int:ticket_id>/messages', methods=['GET'])
 @ticket_user_required
 def get_messages(ticket_user: TicketUser, ticket_id: int):
     ticket = fetch_ticket(
