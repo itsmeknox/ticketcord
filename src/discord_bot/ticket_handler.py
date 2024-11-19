@@ -1,5 +1,5 @@
 from discord import Embed, CategoryChannel, Bot
-from utils.validator import TicketUser
+from utils.schema import TicketUser
 from utils.settings import guild_settings
 import os
 
@@ -73,7 +73,7 @@ class TicketManager:
         )
         embed.add_field(
             name="User Information",
-            value=f"Username: ``{user.username}``\nEmail: ``{user.email}``\nID: ``{user.id}``"
+            value=f"Username: ``{user.username}``\nEmail: ``{user.email}``\nID: ``{user.id}``\nRole: ``{user.role.title()}``"
         )
         embed.set_footer(text=self.guild.name)
         embed.set_author(
