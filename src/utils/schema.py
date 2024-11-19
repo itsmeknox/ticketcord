@@ -24,11 +24,16 @@ class User(BaseModel):
 class Ticket(BaseModel):
     id: int = Field(default_factory=generate_snowflake_id, description="Unique ticket ID")
     user_id: int = Field(..., description="ID of the user who raised the ticket")
+    user_email: EmailStr = Field(..., description="User's email address")
+    username: str = Field(..., min_length=3, max_length=50, description="User's username")
+
     channel_id: int = Field(..., description="Unique identifier for the Discord channel/thread associated with the ticket")
+
+    user_role: UserRole = Field(UserRole.CUSTOMER, description="User role: CUSTOMER, AGENT, or ADMIN")
     topic: Optional[str] = Field(None, description="Ticket topic/title")
     description: Optional[str] = Field(None, description="Detailed description of the ticket")
     status: TicketStatus = Field(TicketStatus.ACTIVE, description="Status of the ticket: ACTIVE, CLOSED or DELETED")
-    webhook_url: HttpUrl = Field(..., description="Webhook URL for the ticket channel")
+    webhook_url: str = Field(..., description="Webhook URL for the ticket channel")
     created_at: int = Field(default_factory=generate_timestamp, description="Ticket creation timestamp")
     updated_at: int = Field(default_factory=generate_timestamp, description="Ticket update timestamp")
 
@@ -46,12 +51,6 @@ class Message(BaseModel):
 
 
 #  ============== API Request ==============
-
-class RegisterUserRequest(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50, description="User's username")
-    email: EmailStr = Field(..., description="User's email address")
-    role: UserRole = Field(UserRole.CUSTOMER, description="User role: CUSTOMER, AGENT, or ADMIN")
-    signature: str = Field(..., description="Signature for the request")
 
 class CreateTicketRequest(BaseModel):
     topic: Optional[str] = Field(None, description="Topic of the ticket")
@@ -96,11 +95,3 @@ class MessageResponse(BaseModel):
 class MessagesResponse(BaseModel):
     messages: List[MessageResponse]
     
-
-class RegisterUserResponse(BaseModel):
-    id: int
-    username: str
-    email: str
-    role: UserRole
-    created_at: int
-    updated_at: int
