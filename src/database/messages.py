@@ -12,3 +12,9 @@ def insert_message(data: Message):
     )
     return result
 
+def fetch_messages(ticket_id: int) -> list[Message]:
+    query = {
+        'ticket_id': ticket_id
+    }
+    result = db.find(query)
+    return [Message(**data) for data in result]
