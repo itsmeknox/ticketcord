@@ -6,7 +6,7 @@ import asyncio
 import threading
 
 from .ticket_handler import TicketManager
-
+from .message_handler import MessageHandler
 
 
 bot = commands.Bot(intents=discord.Intents.all())
@@ -44,6 +44,7 @@ async def on_ready():
 
 
 
+bot.add_cog(MessageHandler(bot))
 
 def run_bot():
     BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
