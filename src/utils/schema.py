@@ -9,8 +9,7 @@ class TicketUser(BaseModel):
     username: str
     email: str
     role: UserRole
-
-
+    
 # User Model
 class User(BaseModel):
     id: int = Field(default_factory=generate_snowflake_id, description="Unique user ID")
@@ -46,9 +45,14 @@ class Message(BaseModel):
 
 
 
-#  ============== API Schema ==============
+#  ============== API Request ==============
 
-# API Request
+class RegisterUserRequest(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50, description="User's username")
+    email: EmailStr = Field(..., description="User's email address")
+    role: UserRole = Field(UserRole.CUSTOMER, description="User role: CUSTOMER, AGENT, or ADMIN")
+    signature: str = Field(..., description="Signature for the request")
+
 class CreateTicketRequest(BaseModel):
     topic: Optional[str] = Field(None, description="Topic of the ticket")
     description: Optional[str] = Field(None, description="Detailed description of the issue")
@@ -63,7 +67,8 @@ class SendMessageRequest(BaseModel):
     attachments: List[HttpUrl] = Field(default_factory=list, description="List of attachment URLs")
 
 
-# API Response
+
+# ============== API Response ==============
 class TicketResponse(BaseModel):
     id: int
     user_id: int
@@ -74,6 +79,10 @@ class TicketResponse(BaseModel):
     created_at: int
     updated_at: int
 
+class TicketsResponse(BaseModel):
+    tickets: List[TicketResponse]
+    
+    
 
 class MessageResponse(BaseModel):
     id: int
@@ -86,3 +95,12 @@ class MessageResponse(BaseModel):
 
 class MessagesResponse(BaseModel):
     messages: List[MessageResponse]
+    
+
+class RegisterUserResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    role: UserRole
+    created_at: int
+    updated_at: int
