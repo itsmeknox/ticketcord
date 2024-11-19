@@ -33,7 +33,8 @@ class MessageHandler(commands.Cog):
         
         message = Message(
             ticket_id=ticket.id,
-            sender_id=message.author.id,
+            author_id=message.author.id,
+            author_name=message.author.display_name or message.author.name,
             content=message.content,
             attachments=[attachment.url for attachment in message.attachments]
         )
