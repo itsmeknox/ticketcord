@@ -13,7 +13,7 @@ class APIException(Exception):
 
 class AuthenticationFailed(APIException):
     """Raised when the user is not authorised to access the resource."""
-    def __init__(self, message: str | None) -> None:
+    def __init__(self, message: str | None=None) -> None:
         self.message = message if message else "401 Unauthorized"
         super().__init__(message)
 
