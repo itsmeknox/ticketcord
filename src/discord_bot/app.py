@@ -42,6 +42,14 @@ async def on_ready():
     is_running.set()
 
 
+@bot.slash_command(name="delete_all_channels_in_category")
+async def create_ticket(ctx: discord.ApplicationContext):
+    await ctx.respond("Deleting the tickets")
+    channels = ctx.interaction.channel.category.channels
+    
+    for channel in channels:
+        await channel.delete()
+          
 
 
 bot.add_cog(MessageHandler(bot))
