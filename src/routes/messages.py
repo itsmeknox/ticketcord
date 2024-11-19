@@ -28,11 +28,12 @@ def create_message(ticket_user: TicketUser, ticket_id: int):
     
     message = Message(
         ticket_id=ticket_id,
-        sender_id=ticket_user.id,
+        author_id=ticket_user.id,
+        author_name=ticket_user.username,
         content=message_payload.content,
         attachments=message_payload.attachments
     )
-    
+
     insert_message(message)
 
     return jsonify(MessageResponse(**message.model_dump()).model_dump()), 201
