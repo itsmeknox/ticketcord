@@ -29,6 +29,7 @@ class Ticket(BaseModel):
     topic: Optional[str] = Field(None, description="Ticket topic/title")
     description: Optional[str] = Field(None, description="Detailed description of the ticket")
     status: TicketStatus = Field(TicketStatus.ACTIVE, description="Status of the ticket: ACTIVE, CLOSED or DELETED")
+    webhook_url: HttpUrl = Field(..., description="Webhook URL for the ticket channel")
     created_at: int = Field(default_factory=generate_timestamp, description="Ticket creation timestamp")
     updated_at: int = Field(default_factory=generate_timestamp, description="Ticket update timestamp")
 
