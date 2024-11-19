@@ -49,4 +49,4 @@ def get_messages(ticket_user: TicketUser, ticket_id: int):
         return jsonify({"error": "Ticket not found"}), 404
     
     messages = fetch_messages(ticket_id)
-    return jsonify({"messages": [MessageResponse(**message.model_dump()).model_dump() for message in messages]}), 200
+    return jsonify([MessageResponse(**message.model_dump()).model_dump() for message in messages]), 200
