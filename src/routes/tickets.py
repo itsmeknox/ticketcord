@@ -56,10 +56,10 @@ def create_ticket(ticket_user: TicketUser):
         return jsonify({"error": str(e)}), 500  
     
     ticket_data = Ticket(
+        id=channel_id,
         user_id=ticket_user.id,
         user_email=ticket_user.email,
         username=ticket_user.username,
-        channel_id=channel_id,
         user_role=ticket_user.role,
         topic=ticket_payload.topic,
         description=ticket_payload.description,
