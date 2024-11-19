@@ -19,21 +19,23 @@ class MessageHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        if message.author == self.bot.user:
+        if message.author.bot:
             return
+        
+
 
         elif message.mentions:
             print("Mention found returning")
             return
         
-        ticket: Ticket = await asyncio.to_thread(fetch_ticket, message.channel.id)
+        ticket: Ticket = await asyncio.to_thread(fetch_ticket, str(message.channel.id))
         if not ticket:
             print("Ticket not found returning")
             return
         
         message = Message(
             ticket_id=ticket.id,
-            author_id=message.author.id,
+            author_id=str(message.author.id),
             author_name=message.author.display_name or message.author.name,
             content=message.content,
             attachments=[attachment.url for attachment in message.attachments]
