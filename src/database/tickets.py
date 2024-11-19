@@ -1,6 +1,6 @@
 from utils.schema import Ticket
 from utils.enums import TicketStatus
-from typing import List  # Corrected import
+from typing_extensions import List  
 from utils.mongo_client import get_database
 
 ticket_collection = get_database()["tickets"]
@@ -38,7 +38,7 @@ def fetch_user_tickets(user_id: int, status: List[TicketStatus]) -> List[Ticket]
 
     # Execute the query
     cursor = ticket_collection.find(query)
-    tickets = []
+    tickets: List[Ticket] = []
     for ticket in cursor:
         tickets.append(Ticket(**ticket))
     
