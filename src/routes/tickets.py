@@ -5,6 +5,7 @@ from typing_extensions import List
 from discord.errors import DiscordException
 from modules.decorator import ticket_user_required
 from modules.auth import JWT
+from utils.enums import TicketStatus
 
 from utils.schema import (
     CreateTicketRequest, 
@@ -56,14 +57,17 @@ def create_ticket(ticket_user: TicketUser):
     
     ticket_data = Ticket(
         user_id=ticket_user.id,
+        user_email=ticket_user.email,
+        username=ticket_user.username,
         channel_id=channel_id,
+        user_role=ticket_user.role,
         topic=ticket_payload.topic,
         description=ticket_payload.description,
         webhook_url=webhook_url
     )
 
     insert_ticket(ticket_data)
-    
+
     return jsonify(TicketResponse(**ticket_data.model_dump()).model_dump()), 201
 
 
@@ -85,7 +89,7 @@ def get_ticket(ticket_user: TicketUser, ticket_id: int):
 @bp_tickets.route('/', methods=['GET'])
 @ticket_user_required
 def get_tickets(ticket_user: TicketUser):
-    tickets: List[Ticket] = fetch_user_tickets(ticket_user.id)
+    tickets: List[Ticket] = fetch_user_tickets(ticket_user.id, status=[TicketStatus.ACTIVE, TicketStatus.CLOSED])
 
     ticket_list = [TicketResponse(**ticket.model_dump()).model_dump() for ticket in tickets]
     
