@@ -22,12 +22,13 @@ class User(BaseModel):
 
 # Ticket Model
 class Ticket(BaseModel):
-    id: int = Field(default_factory=generate_snowflake_id, description="Unique ticket ID")
+    # id: int = Field(default_factory=generate_snowflake_id, description="Unique ticket ID")
+    id: int = Field(..., description="Unique identifier for the Discord channel/thread associated with the ticket")
+
     user_id: int = Field(..., description="ID of the user who raised the ticket")
     user_email: EmailStr = Field(..., description="User's email address")
     username: str = Field(..., min_length=3, max_length=50, description="User's username")
 
-    channel_id: int = Field(..., description="Unique identifier for the Discord channel/thread associated with the ticket")
 
     user_role: UserRole = Field(UserRole.CUSTOMER, description="User role: CUSTOMER, AGENT, or ADMIN")
     topic: Optional[str] = Field(None, description="Ticket topic/title")
@@ -42,9 +43,10 @@ class Ticket(BaseModel):
 class Message(BaseModel):
     id: int = Field(default_factory=generate_snowflake_id, description="Unique message ID")
     ticket_id: int = Field(..., description="Associated ticket ID")
-    sender_id: int = Field(..., description="ID of the user who sent the message")
+    author_id: int = Field(..., description="ID of the user who sent the message")
+    author_name: str = Field(..., min_length=2, max_length=50, description="Username of the message sender")
     content: str = Field(..., description="Message content")
-    attachments: List[HttpUrl] = Field(default_factory=list, description="List of attachment URLs")
+    attachments: List[str] = Field(default_factory=list, description="List of attachment URLs")
     created_at: int = Field(default_factory=generate_timestamp, description="Message sent timestamp")
     updated_at: int = Field(default_factory=generate_timestamp, description="Message update timestamp")
 
@@ -71,7 +73,7 @@ class SendMessageRequest(BaseModel):
 class TicketResponse(BaseModel):
     id: int
     user_id: int
-    channel_id: int
+    # channel_id: int
     topic: Optional[str]
     description: Optional[str]
     status: TicketStatus
@@ -81,12 +83,12 @@ class TicketResponse(BaseModel):
 class TicketsResponse(BaseModel):
     tickets: List[TicketResponse]
     
-    
 
 class MessageResponse(BaseModel):
     id: int
     ticket_id: int
-    sender_id: int
+    author_id: int
+    author_name: str
     content: str
     attachments: List[HttpUrl]
     created_at: int
