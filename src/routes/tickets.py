@@ -1,13 +1,14 @@
 from flask import Blueprint, request, jsonify
 
-from utils.validator import (
-    PostTicketPayload, 
+from utils.schema import (
+    CreateTicketRequest, 
     Ticket, 
-    TicketUser
+    TicketUser,
+    TicketResponse
 )
 from modules.decorator import ticket_user_required
 from discord_bot.app import ticket_manager, bot_run_async_coroutine
-from database.tickets import insert_ticket
+from database.tickets import insert_ticket, fetch_ticket, fetch_user_tickets
 
 from modules.auth import JWT
 from dotenv import load_dotenv
@@ -29,29 +30,49 @@ bp_tickets = Blueprint('tickets', __name__, url_prefix='/api/v1/tickets')
 @ticket_user_required
 def create_ticket(ticket_user: TicketUser):
     # Validate the request payload
-    ticket_payload = PostTicketPayload.model_validate(request.get_json())
-
-    # Create a ticket object
+    ticket_payload = CreateTicketRequest.model_validate(request.get_json())
 
     
     channel_id, webhook_url = bot_run_async_coroutine(
         ticket_manager.create_ticket(
-        ticket_payload.title,
+        ticket_payload.topic,
         description=ticket_payload.description,
         user=ticket_user
     ))
     
     ticket_data = Ticket(
-        id=channel_id,
-        title=ticket_payload.title,
+        user_id=ticket_user.id,
+        channel_id=channel_id,
+        topic=ticket_payload.topic,
         description=ticket_payload.description,
-        user=ticket_user,
-        last_seen_message_id=None,
-        webhook_url=webhook_url,
-        status="ACTIVE"
+        webhook_url=webhook_url
     )
 
     insert_ticket(ticket_data)
+    
+
+    return jsonify(TicketResponse(**ticket_data.model_dump()).model_dump()), 201
+
+@bp_tickets.route('/<int:ticket_id>', methods=['GET'])
+@ticket_user_required
+def get_ticket(ticket_user: TicketUser, ticket_id: int):
+    
+    ticket_data = fetch_ticket(
+        ticket_id=ticket_id,
+        user_id=ticket_user.id
+    )
+    if not ticket_data:
+        return jsonify({"error": "Ticket not found"}), 404
+
+    return jsonify(TicketResponse(**ticket_data.model_dump()).model_dump()), 200
 
 
-    return jsonify(ticket_data.model_dump(exclude="webhook_url")), 201
+@bp_tickets.route('/', methods=['GET'])
+@ticket_user_required
+def get_tickets(ticket_user: TicketUser):
+    tickets = fetch_user_tickets(ticket_user.id)
+
+    ticket_list = [TicketResponse(**ticket.model_dump()).model_dump() for ticket in tickets]
+    
+    return jsonify(ticket_list), 200
+
