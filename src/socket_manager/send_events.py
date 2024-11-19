@@ -1,4 +1,4 @@
-from utils.validator import Ticket
+from utils.schema import Ticket
 
 
 
