@@ -39,7 +39,7 @@ class MessageHandler(commands.Cog):
             attachments=[attachment.url for attachment in message.attachments]
         )
         insert_message(message)
-        send_message_event(message)
+        send_message_event(user_id=ticket.user_id, message=message)
         
         print("Message sent: ", message.content)
         
