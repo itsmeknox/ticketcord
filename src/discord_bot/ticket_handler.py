@@ -1,11 +1,27 @@
 from discord import Embed, CategoryChannel, Bot
-from utils.schema import TicketUser
+from utils.schema import TicketUser, Ticket
 from utils.settings import guild_settings
+
+import chat_exporter
+import discord
+
 import os
+import io
 
-
-
-
+class TranscriptView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        
+        
+    
+    @discord.ui.button(label="View Transcript", style=discord.ButtonStyle.primary, custom_id="transcript_button")
+    async def send_transcript(self, button: discord.ui.Button, interaction: discord.Interaction):
+        try:
+            file_link = await chat_exporter.link(interaction.message)
+        except IndexError:
+            return await interaction.response.send_message("No transcript found.", ephemeral=True)
+        
+        await interaction.response.send_message(f"{file_link}", ephemeral=True)
 
 class TicketManager:
     def __init__(self, bot: Bot):
@@ -34,6 +50,11 @@ class TicketManager:
             raise ValueError("Support team role not found in the guild.")
         
         self.category_ids = guild_settings.ticket_opening_categories
+        
+        self.transcript_channel = self.guild.get_channel(int(os.getenv("TRANSCRIPT_CHANNEL_ID")))
+        if not self.transcript_channel:
+            raise ValueError("Transcript channel not found in the guild.")
+        
 
 
     async def get_ticket_category_id(self):
@@ -53,6 +74,34 @@ class TicketManager:
         category = await category_to_clone.clone(name=f"Ticket Category - {len(self.category_ids) + 1}")
         self.append_category_id(category.id)
         return category
+    
+    async def send_transcript(self, ticket: Ticket, transcript_str: str, reason: str = None):
+        embed = Embed(
+            title="Ticket Transcript",
+            
+        )
+        
+        embed.add_field(
+            name="Ticket Information",
+            value=f"Topic: ``{ticket.topic}``\nDescription: ``{ticket.description}``\nStatus: ``{ticket.status.title()}``",
+            inline=False
+        )
+        embed.add_field(
+            name="User Information",
+            value=f"Name: ``{ticket.username}``\nEmail: ``{ticket.user_email}``\nID: ``{ticket.user_id}``\nRole: ``{ticket.user_role.title()}``",
+        )
+        if reason:
+            embed.add_field(
+            name="Reason",
+            value=reason,
+        )
+        embed.set_footer(text=self.guild.name)
+        transcript_file = discord.File(
+        io.BytesIO(transcript_str.encode()),
+        filename=f"transcript-{ticket.id}.html",
+    )
+        await self.transcript_channel.send(embed=embed, file=transcript_file, view=TranscriptView())
+
 
 
     async def create_ticket(
