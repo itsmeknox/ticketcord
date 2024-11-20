@@ -7,3 +7,4 @@ TODO
 .env
 
 *.html
+tailwind.config.js
