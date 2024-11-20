@@ -41,7 +41,7 @@ def initialize_limiter():
     limiter.init_app(app)
     ticket_limiter.init_app(app)
     
-    limiter.limit("15 per minute")(bp_messages)
+    limiter.limit("10 per minute")(bp_messages)
 
 
 
