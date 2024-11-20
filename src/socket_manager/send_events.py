@@ -19,3 +19,7 @@ def send_message_event(user_id: int, message: Message):
 
 def message_edit_event(user_id: int, message: Message):
     sio.emit("edit_message", message.model_dump(), room=user_id)
+
+
+def ticket_close_event(user_id: int, ticket_id: str):
+    sio.emit("ticket_closed", {"id": str(ticket_id)}, room=user_id)
