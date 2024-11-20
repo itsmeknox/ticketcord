@@ -5,8 +5,13 @@ import threading
 import asyncio
 import threading
 
-from .ticket_handler import TicketManager
+from .ticket_handler import TicketManager, TranscriptView
 from .message_handler import MessageHandler
+from chat_exporter import export
+
+from database.tickets import update_ticket_status, fetch_ticket
+from socket_manager.send_events import ticket_close_event
+from utils.enums import TicketStatus
 
 
 bot = commands.Bot(intents=discord.Intents.all())
@@ -34,13 +39,41 @@ def bot_run_async_coroutine(coro):
             raise e
 
 
+    
+
+
 @bot.event
 async def on_ready():
     global is_running
     print(f"Succesfully logged in as {bot.user}")
     ticket_manager.initialize()
     is_running.set()
+    
+    bot.add_view(TranscriptView())
 
+
+@bot.slash_command(name="delete_ticket")
+async def delete_ticket(ctx: discord.ApplicationContext, reason: str):
+    # Remove the first query to fetch the ticket
+    # ticket = fetch_ticket(ctx.interaction.channel.id)
+    # if not ticket:
+    #     await ctx.respond(f"This channel is not a ticket channel.", ephemeral=True)
+    
+    # Update the ticket status and get the updated ticket
+    ticket = update_ticket_status(ctx.interaction.channel_id, TicketStatus.CLOSED)
+    if not ticket:
+        await ctx.respond(f"Failed to update ticket status in database", ephemeral=True)
+        return
+
+    ticket_close_event(ticket.user_id, ticket.id)
+        
+    await ctx.respond(embed=discord.Embed(title="Ticket Closed", description="This ticket has been closed deleting..."))
+    
+    transcript_file = await export(ctx.interaction.channel)
+    await ticket_manager.send_transcript(ticket, transcript_file, reason)
+    await ctx.interaction.channel.delete()
+
+    
 
 @bot.slash_command(name="delete_all_channels_in_category")
 async def create_ticket(ctx: discord.ApplicationContext):
