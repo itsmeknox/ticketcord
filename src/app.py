@@ -1,8 +1,8 @@
 from flask import Flask, jsonify
 from flask_socketio import SocketIO
 from flask_cors import CORS
-
-
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from dotenv import load_dotenv
 from pydantic import ValidationError
@@ -16,7 +16,7 @@ from utils.exceptions import (
 )
 
 from routes.messages import bp_messages
-from routes.tickets import bp_tickets
+from routes.tickets import bp_tickets, ticket_limiter
 from socket_manager.handler import SocketHandler
 from socket_manager.send_events import socket_sio_init
 
@@ -29,6 +29,20 @@ load_dotenv()
 app = Flask(__name__)
 
 CORS(app, resources={r"/*": {"origins": "*"}}, cors_allowed_origins="*")
+
+# Initialize rate limiter
+limiter = Limiter(
+    get_remote_address,
+    storage_uri="memory://",
+    default_limits=["100 per minute"]
+)
+
+def initialize_limiter():
+    limiter.init_app(app)
+    ticket_limiter.init_app(app)
+    
+    limiter.limit("15 per minute")(bp_messages)
+
 
 
 def setup_socketio() -> SocketIO:
@@ -43,6 +57,7 @@ def register_blueprints():
 
 setup_socketio()
 register_blueprints()
+initialize_limiter()
 
 
 @app.errorhandler(AuthenticationFailed)

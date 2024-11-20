@@ -14,7 +14,6 @@ load_dotenv()
 
 jwt_enc = JWT(encryption_key=os.getenv('JWT_SECRET_KEY'))
 
-
 def ticket_user_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -28,5 +27,9 @@ def ticket_user_required(func):
         except ValidationError:
             raise InternalServerError("An unexpected error occurred. Fields are missing in token")
 
+        # Store the user ID safely without modifying headers
+        request.user_id = ticket_user.id  # OR g.user_id = ticket_user.id
+
         return func(ticket_user, *args, **kwargs)
     return wrapper
+

@@ -1,12 +1,16 @@
 from flask import Blueprint, request, jsonify
+
 from typing_extensions import List
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 
 
 from discord.errors import DiscordException
 from modules.decorator import ticket_user_required
 from modules.auth import JWT
 from utils.enums import TicketStatus
-
+from utils.helper import rate_limit_handler
 from utils.schema import (
     CreateTicketRequest, 
     Ticket, 
@@ -33,13 +37,22 @@ import threading
 
 
 
+   
+
+ticket_limiter = Limiter(
+    rate_limit_handler,
+    storage_uri="memory://"
+) 
 create_ticket_lock = threading.Lock()
 jwt_enc = JWT(encryption_key=os.getenv('JWT_SECRET_KEY'))
 
 bp_tickets = Blueprint('tickets', __name__, url_prefix='/api/v1/tickets')
 
 
+
+
 @bp_tickets.route('', methods=['POST'])
+@ticket_limiter.limit("3 per minute")
 @ticket_user_required
 def create_ticket(ticket_user: TicketUser):
     # Validate the request payload
