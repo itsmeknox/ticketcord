@@ -29,6 +29,7 @@ class GuildSettings:
             raise ValueError("Settings not found in the database")
 
         try:
+            self.replay_to_success_message: bool = data["replay_to_success_message"]
             self.support_team_role_id: int = data["support_team_role_id"]
             self.ticket_opening_categories: List[int] = data["ticket_opening_categories"]
             self.ticket_closing_categories: List[int] = data["ticket_closing_categories"]
