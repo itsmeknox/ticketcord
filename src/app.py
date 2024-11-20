@@ -20,6 +20,7 @@ from routes.tickets import bp_tickets
 from socket_manager.handler import SocketHandler
 from socket_manager.send_events import socket_sio_init
 
+from discord.errors import DiscordException
 
 import json
 import os
@@ -72,6 +73,11 @@ def validation_error(e: ValidationError):
 
     return jsonify({"message": "Invalid form of body", "errors": errors}), 400
  
+ 
+@app.errorhandler(DiscordException)
+def handle_discord_exception(e: DiscordException):
+    print(e)
+    return jsonify({"message": "An error occurred while trying to interact with discord"}), 500
 
 
 def run_app():
