@@ -14,10 +14,10 @@ def insert_ticket(ticket: Ticket) -> None:
     return ticket_collection.insert_one(ticket.model_dump())
 
 
-def fetch_ticket(ticket_id: int, user_id: int = None) -> Ticket:
-    filter = {"id": ticket_id}
+def fetch_ticket(ticket_id: str, user_id: str = None) -> Ticket:
+    filter = {"id": str(ticket_id)}
     if user_id:
-        filter["user_id"] = user_id
+        filter["user_id"] = str(user_id)
 
     data = ticket_collection.find_one(filter)
     if data:
@@ -26,13 +26,13 @@ def fetch_ticket(ticket_id: int, user_id: int = None) -> Ticket:
     return None 
 
 
-def fetch_user_tickets(user_id: int, status: List[TicketStatus]) -> List[Ticket]:
+def fetch_user_tickets(user_id: str, status: List[TicketStatus]) -> List[Ticket]:
     # Convert status list to their string values for querying
     status_values = [s.value for s in status]
 
     # Build the query
     query = {
-        "user_id": user_id,
+        "user_id": str(user_id),
         "status": {"$in": status_values}  # Match any of the provided statuses
     }
 
@@ -44,3 +44,15 @@ def fetch_user_tickets(user_id: int, status: List[TicketStatus]) -> List[Ticket]
     
     # Convert results to a list and return
     return tickets
+
+def update_ticket_status(ticket_id: str, status: TicketStatus) -> Ticket:
+    query = {"id": str(ticket_id)}
+    update = {"$set": {"status": status.value}}
+    result = ticket_collection.find_one_and_update(query, update, return_document=True)
+    if not result:
+        return None
+    
+    return Ticket(**result)
+
+
+
