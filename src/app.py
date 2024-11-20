@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 from flask_socketio import SocketIO
 from flask_cors import CORS
-from flask_limiter import Limiter
+from flask_limiter import Limiter, RateLimitExceeded
 from flask_limiter.util import get_remote_address
 
 from dotenv import load_dotenv
@@ -67,6 +67,11 @@ def handle_auth_failed(e: AuthenticationFailed):
 @app.errorhandler(InternalServerError)
 def handle_internal_server_error(e: InternalServerError):
     return e.to_response()
+
+@app.errorhandler(RateLimitExceeded)
+def handle_rate_limit_exceeded(e: RateLimitExceeded):
+    return jsonify({"error": "ratelimit_exceeded", "message": f"You are being ratelimited only {e.description} request are allowed"}), 429
+
 
 @app.errorhandler(ValidationError)
 def validation_error(e: ValidationError):
