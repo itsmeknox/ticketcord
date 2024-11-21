@@ -75,12 +75,16 @@ class SendMessageRequest(BaseModel):
 class TicketResponse(BaseModel):
     id: str
     user_id: str
-    # channel_id: int
     topic: Optional[str]
     description: Optional[str]
     status: TicketStatus
     created_at: int
     updated_at: int
+
+    user_role: UserRole
+    support_role: SupportRole
+    issue_level: IssueLevel 
+
 
 class TicketsResponse(BaseModel):
     tickets: List[TicketResponse]
