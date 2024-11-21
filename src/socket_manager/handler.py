@@ -3,7 +3,7 @@ from pydantic import ValidationError
 from typing_extensions import Dict
 from utils.schema import TicketUser
 from modules.auth import JWT
-from utils.exceptions import AuthenticationFailed
+from utils.exceptions import AuthenticationError
 
 from flask_socketio import (
     Namespace, 
@@ -39,7 +39,7 @@ class SocketHandler(Namespace):
             emit("error", {"message": f"Invalid token structure: {str(e)}"})
             return False
 
-        except AuthenticationFailed:
+        except AuthenticationError:
             print("Invalid or expired token")
             emit("error", {"message": "Invalid or expired token"})
             return False
