@@ -11,9 +11,11 @@ from typing import List, Optional, Union
 import threading
 import time
 import functools
+import os
 
 gen = SnowflakeGenerator(0)
 
+ERROR_WEBHOOK_URL = os.getenv("ERROR_WEBHOOK_URL")
 
 
 def generate_snowflake_id() -> str:
@@ -100,5 +102,44 @@ def rate_limit_handler():
     
     
 
-def send_error_log(error_type: str, trackback: str, request: Request):
-    ...
+def send_error_log(error_type: str, trackback: str, error: Exception):
+
+    trackback_len = len(trackback)
+    if trackback_len > 4000:
+        trackback =  "..... (truncated)\n" + trackback[(trackback_len-4000):]
+
+    embed = Embed(
+        title=error_type, 
+        description=f"```py\n{trackback}```", 
+        color=0xFF0000
+    )
+    
+    embed.add_field(
+        name="Error Type",
+        value=f"```py\n{error.__class__.__name__}```",
+        inline=False
+    )
+
+    embed.add_field(
+    name="Request Info",
+    value=f"**Path:** ``{request.path}``\n**Method:** ``{request.method}``\n**Query Params:** ```py\n{request.args.to_dict()}```",
+    inline=False
+)   
+    request_body = request.data.decode("utf-8") if len(request.data) < 1000 else request.data.decode("utf-8")[:1000] + "..... (truncated)"
+    embed.add_field(
+        name="Request Body",
+        value=f"```py\n{request_body}```",
+    )
+
+    user_ip = request.remote_addr
+
+    embed.add_field(
+    name="User Info",
+    value=f"**IP Address:** ``{user_ip}``\n**User-Agent:** ``{request.headers.get('User-Agent')}``",
+    inline=False
+)   
+    send_webhook_message(
+        url=ERROR_WEBHOOK_URL,
+        embed=embed,
+        run_as_thread=True
+    )
