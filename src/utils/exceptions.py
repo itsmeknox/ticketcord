@@ -14,16 +14,15 @@ class APIException(Exception):
         self.message = message
         self.status_code = status_code
 
-        self.capture_traceback()
 
 
-
-    def capture_traceback(self):
+    def get_trackback(self):
         """Capture and format the traceback of the exception."""
         if self.__traceback__:
-            self.traceback = "".join(traceback.format_exception(type(self), self, self.__traceback__))
+            return "".join(traceback.format_exception(type(self), self, self.__traceback__))
         else:
-            self.traceback = traceback.format_exc()
+            return traceback.format_exc()
+            
             
     def to_response(self):
         """Convert the exception to a Flask response."""
@@ -50,6 +49,8 @@ class InternalServerError(CriticalAPIException):
     """Raised when an internal server error occurs."""
     def __init__(self, message: str | None=None, extra: dict=None, error: Exception=None) -> None:
         self.message = message if message else "500 Internal Server Error"
+        self.status_code = 500
+
         super().__init__(message=message, status_code=self.status_code, extra=extra, error=error)
 
 
@@ -58,6 +59,8 @@ class DatabaseError(CriticalAPIException):
     """Raised when an internal server error occurs."""
     def __init__(self, message: str | None, extra: dict=None, error: Exception=None) -> None:
         self.message = message if message else "500 Internal Server Error"
+        self.status_code = 500
+
         super().__init__(message=message, status_code=self.status_code, extra=extra, error=error)
 
 
