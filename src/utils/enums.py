@@ -14,7 +14,7 @@ class TicketStatus(str, Enum):
 
 
 class IssueLevel(str, Enum):
-    NORMAL = "NORAML"
+    NORMAL = "NORMAL"
     URGENT = "URGENT"
     CRITICAL = "CRITICAL"
 
