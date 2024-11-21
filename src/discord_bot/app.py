@@ -96,7 +96,7 @@ async def assign_role(
     issue_level: str,
     note: str = None
 ):
-    await ctx.defer()
+    await ctx.defer(ephemeral=True)
 
     # Map inputs to enums
     support_role_mapping = {role.value: role for role in SupportRole}
@@ -130,14 +130,6 @@ async def assign_role(
     else:
         await ctx.interaction.channel.edit(category=await ticket_manager.get_ticket_category())
 
-    # Build the embed message
-    note_message = f"\nNote: {note}" if note else ""
-    embed = discord.Embed(
-        title="Role Assigned",
-        description=f"Role: {support_role.value}\nIssue Level: {issue_level}{note_message}",
-        color=discord.Color.blue()
-    )
-
     role_mention = {
         SupportRole.ADMIN: guild_settings.admin_role_id,
         SupportRole.MANAGER: guild_settings.manager_role_id,
@@ -145,13 +137,38 @@ async def assign_role(
         SupportRole.GENERAL: guild_settings.support_team_role_id
     }.get(support_role, guild_settings.support_team_role_id)
 
+
+    # Build the embed message
+    embed = discord.Embed(description=f"# Ticket Assigned Successfully")
+    embed.set_footer(text=ticket_manager.guild.name)
+    embed.add_field(
+        name="Role Requested",
+        value=f"{support_role}",
+        inline=False
+    )
+    
+    embed.add_field(
+        name="Issue Level",
+        value=f"{issue_level}",
+        inline=False
+        
+    )
+    
+    if note:
+        embed.add_field(
+        name="Note",
+        value=f"{note}",
+        inline=False
+        
+    )
+
+
     if not role_mention:
         return await ctx.respond("Role mention configuration is missing.", ephemeral=True)
 
     await ctx.interaction.channel.send(f"<@&{role_mention}>", embed=embed)
-    await ctx.respond(f"Ticket successfully updated with role {role} and issue level {issue_level}.")
-
-
+    await ctx.respond(embed=discord.Embed(title="Sucessfully assigned role and issue level"))
+    
 
 @bot.slash_command(name="delete_all_channels_in_category")
 async def create_ticket(ctx: discord.ApplicationContext):
