@@ -106,7 +106,7 @@ def run_app():
         raise ValueError("WEB_SERVER_PORT is not set in the environment variables")
     
         
-    if os.getenv("MODE") == "PRODUCTION":
+    if os.getenv("SERVER_MODE") == "PRODUCTION":
         serve(app, host="0.0.0.0", port=PORT)
     else:
         app.run(host='127.0.0.1', port=PORT, debug=False)
