@@ -4,6 +4,7 @@ import os
 import threading
 import asyncio
 import threading
+import traceback
 
 from .ticket_handler import TicketManager, TranscriptView
 from .message_handler import MessageHandler
@@ -13,6 +14,8 @@ from database.tickets import update_ticket_status, update_ticket
 from socket_manager.send_events import ticket_close_event
 from utils.enums import TicketStatus, SupportRole, IssueLevel
 from utils.settings import guild_settings
+
+from utils.helper import send_disord_error_log
 
 from discord import option
 
@@ -67,7 +70,7 @@ async def delete_ticket(ctx: discord.ApplicationContext, reason: str):
         await ctx.respond(f"Failed to update ticket status in database", ephemeral=True)
         return
 
-    ticket_close_event(ticket.user_id, ticket.id)
+    ticket_close_event(ticket.user_id, ticket)
         
     await ctx.respond(embed=discord.Embed(title="Ticket Closed", description="This ticket has been closed deleting..."))
     
@@ -168,16 +171,20 @@ async def assign_role(
 
     await ctx.interaction.channel.send(f"<@&{role_mention}>", embed=embed)
     await ctx.respond(embed=discord.Embed(title="Sucessfully assigned role and issue level"))
-    
 
-@bot.slash_command(name="delete_all_channels_in_category")
-async def create_ticket(ctx: discord.ApplicationContext):
-    await ctx.respond("Deleting the tickets")
-    channels = ctx.interaction.channel.category.channels
+
+@bot.event
+async def on_application_command_error(ctx: discord.ApplicationContext, error: Exception):
+    if ctx:
+        await ctx.respond(f"An error occurred: {error}")
     
-    for channel in channels:
-        await channel.delete()
-          
+    try:
+        raise error
+    except Exception as e:
+        traceback_details = traceback.format_exc()
+
+    print(traceback_details)
+    await asyncio.to_thread(send_disord_error_log, ctx, "Application Command Error", traceback_details, error)    
 
 
 bot.add_cog(MessageHandler(bot))
