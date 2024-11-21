@@ -1,14 +1,12 @@
 from flask import Blueprint, request, jsonify
+from flask_limiter import Limiter
 
 from typing_extensions import List
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 
 
-
-from discord.errors import DiscordException
 from modules.decorator import ticket_user_required
 from modules.auth import JWT
+
 from utils.enums import TicketStatus
 from utils.helper import rate_limit_handler
 from utils.schema import (
@@ -18,7 +16,7 @@ from utils.schema import (
     TicketResponse
 )
 
-
+from discord.errors import DiscordException
 
 from discord_bot.app import (
     ticket_manager, 
@@ -30,7 +28,6 @@ from database.tickets import (
     fetch_ticket, 
     fetch_user_tickets
 )
-
 
 import os
 import threading
@@ -108,7 +105,7 @@ def get_ticket(ticket_user: TicketUser, ticket_id: int):
 @bp_tickets.route('', methods=['GET'])
 @ticket_user_required
 def get_tickets(ticket_user: TicketUser):
-    tickets: List[Ticket] = fetch_user_tickets(ticket_user.id, status=[TicketStatus.ACTIVE,])
+    tickets: List[Ticket] = fetch_user_tickets(ticket_user.id, status=[TicketStatus.ACTIVE])
 
     ticket_list = [TicketResponse(**ticket.model_dump()).model_dump() for ticket in tickets]
     
