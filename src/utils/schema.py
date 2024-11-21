@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field, HttpUrl
 from typing import List, Optional
 from .helper import generate_snowflake_id, generate_timestamp
-from .enums import UserRole, TicketStatus
+from .enums import UserRole, TicketStatus, SupportRole, IssueLevel
 
 # Database Schema
 class TicketUser(BaseModel):
@@ -38,6 +38,8 @@ class Ticket(BaseModel):
     created_at: int = Field(default_factory=generate_timestamp, description="Ticket creation timestamp")
     updated_at: int = Field(default_factory=generate_timestamp, description="Ticket update timestamp")
 
+    support_role: SupportRole = Field(SupportRole.GENERAL, description="Support role assigned to the ticket")
+    issue_level: IssueLevel = Field(IssueLevel.GENERAL, description="Issue level of the ticket")
 
 # Message Model
 class Message(BaseModel):
