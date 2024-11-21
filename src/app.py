@@ -1,3 +1,8 @@
+from gevent.pywsgi import WSGIServer
+from geventwebsocket.handler import WebSocketHandler
+
+# monkey.patch_all()
+
 from flask import Flask, jsonify
 from flask_socketio import SocketIO
 from flask_cors import CORS
@@ -32,6 +37,10 @@ app = Flask(__name__)
 
 CORS(app, resources={r"/*": {"origins": "*"}}, cors_allowed_origins="*")
 
+sio = SocketIO(app, cors_allowed_origins="*", async_mode="gevent")
+
+
+
 # Initialize rate limiter
 limiter = Limiter(
     get_remote_address,
@@ -48,10 +57,8 @@ def initialize_limiter():
 
 
 def setup_socketio() -> SocketIO:
-    sio = SocketIO(app, cors_allowed_origins="*")
     socket_sio_init(sio)
     sio.on_namespace(SocketHandler())
-    return sio
 
 def register_blueprints():
     app.register_blueprint(bp_tickets)
@@ -130,10 +137,14 @@ def run_app():
     
         
     if os.getenv("SERVER_MODE") == "PRODUCTION":
-        serve(app, host="0.0.0.0", port=PORT)
+        print("Running in production mode")
+        http_server = WSGIServer(('0.0.0.0', int(PORT)), app, handler_class=WebSocketHandler)
+        http_server.serve_forever()
     else:
+        print("Running in development mode")
         app.run(host='127.0.0.1', port=PORT, debug=False)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     run_bot()
     run_app()
