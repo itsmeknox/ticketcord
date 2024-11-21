@@ -1,6 +1,6 @@
 from snowflake import SnowflakeGenerator
 from discord_webhook import DiscordWebhook
-from discord import Embed
+from discord import Embed, ApplicationContext
 
 from flask import request, Request
 
@@ -16,6 +16,7 @@ import os
 gen = SnowflakeGenerator(0)
 
 ERROR_WEBHOOK_URL = os.getenv("ERROR_WEBHOOK_URL")
+ERROR_BOT_WEBHOOK_URL = os.getenv("ERROR_BOT_WEBHOOK_URL")
 
 
 def generate_snowflake_id() -> str:
@@ -26,9 +27,9 @@ def generate_timestamp() -> int:
 
 def calc_timing(func):
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args, kwargs):
         start = time.time()
-        result = func(*args, **kwargs)
+        result = func(*args, kwargs)
         print(f"Func {func.__name__} took {time.time() - start}s to complete")
         return result
     return wrapper
@@ -102,6 +103,33 @@ def rate_limit_handler():
     
     
 
+def send_disord_error_log(ctx: ApplicationContext, error_type: str, trackback: str, error: Exception):
+    trackback_len = len(trackback)
+    
+    if trackback_len > 4000:
+        trackback =  "..... (truncated)\n" + trackback[(trackback_len-4000):]
+
+    embed = Embed(
+        title=error_type, 
+        description=f"```py\n{trackback}```", 
+        color=0xFF0000
+    )
+    
+    if ctx:
+        embed.add_field(
+            name="Interaction Info",
+            value=f"Command Name: ``{ctx.command.name}``\nChannel: ``{ctx.interaction.channel.name}``\nUser: ``{ctx.interaction.user.name}``\nGuild: ``{ctx.interaction.guild.name}``",
+            inline=False
+        )
+    
+    embed.add_field(
+        name="Error Type",
+        value=f"```py\n{error.__class__.__name__}```",
+        inline=False
+    )
+
+    send_webhook_message(url=ERROR_BOT_WEBHOOK_URL, embed=embed, run_as_thread=True)
+
 def send_error_log(error_type: str, trackback: str, error: Exception):
 
     trackback_len = len(trackback)
@@ -122,7 +150,7 @@ def send_error_log(error_type: str, trackback: str, error: Exception):
 
     embed.add_field(
     name="Request Info",
-    value=f"**Path:** ``{request.path}``\n**Method:** ``{request.method}``\n**Query Params:** ```py\n{request.args.to_dict()}```",
+    value=f"Path: ``{request.path}``\nMethod: ``{request.method}``\nQuery Params: ```py\n{request.args.to_dict()}```",
     inline=False
 )   
     request_body = request.data.decode("utf-8") if len(request.data) < 1000 else request.data.decode("utf-8")[:1000] + "..... (truncated)"
@@ -135,7 +163,7 @@ def send_error_log(error_type: str, trackback: str, error: Exception):
 
     embed.add_field(
     name="User Info",
-    value=f"**IP Address:** ``{user_ip}``\n**User-Agent:** ``{request.headers.get('User-Agent')}``",
+    value=f"IP Address: ``{user_ip}``\nUser-Agent: ``{request.headers.get('User-Agent')}``",
     inline=False
 )   
     send_webhook_message(
