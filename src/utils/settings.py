@@ -12,6 +12,11 @@ class GuildSettings:
     def _initialize(self):
         self.load_settings()
         self._validate_settings()
+        
+        self.admin_role_id = int(os.getenv("ADMIN_ROLE_ID"))
+        self.manager_role_id = int(os.getenv("MANAGER_ROLE_ID"))
+        self.developer_role_id = int(os.getenv("DEVELOPER_ROLE_ID"))
+        self.support_team_role_id = int(os.getenv("SUPPORT_TEAM_ROLE_ID"))
 
     def _validate_settings(self): 
         if not isinstance(self.ticket_closing_categories, list) or not self.ticket_closing_categories:
@@ -19,15 +24,8 @@ class GuildSettings:
         
         if not isinstance(self.ticket_closing_categories, list) or not self.ticket_closing_categories:
             raise ValueError("Ticket closing category is not set or not a list of integers")
-        
-        if not isinstance(self.support_team_role_id, int):
-            raise ValueError("Support team role ID is not set or not an integer")
-        
-        self.admin_role_id = int(os.getenv("ADMIN_ROLE_ID"))
-        self.manager_role_id = int(os.getenv("MANAGER_ROLE_ID"))
-        self.developer_role_id = int(os.getenv("DEVELOPER_ROLE_ID"))
-        self.support_team_role_id = int(os.getenv("SUPPORT_TEAM_ROLE_ID"))
-        
+
+
 
     def load_settings(self):
         data = self.collection.find_one({"id": "guild_settings"})
@@ -36,11 +34,12 @@ class GuildSettings:
 
         try:
             self.replay_to_success_message: bool = data["replay_to_success_message"]
-            self.support_team_role_id: int = data["support_team_role_id"]
             self.ticket_opening_categories: List[int] = data["ticket_opening_categories"]
             self.ticket_closing_categories: List[int] = data["ticket_closing_categories"]
         except KeyError:
             raise ValueError("Invalid settings data found in the database")
+
+
 
     def update_settings(self, data: dict) -> bool:
         self.collection.update_one({"id": "guild_settings"}, {"$set": data})

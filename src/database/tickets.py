@@ -1,6 +1,6 @@
 from utils.schema import Ticket
-from utils.enums import TicketStatus, UserRole, SupportRole, IssueLevel
-from typing_extensions import List  
+from utils.enums import TicketStatus
+from typing_extensions import List
 from utils.mongo_client import get_database
 from pydantic import ValidationError
 
@@ -74,8 +74,8 @@ def update_ticket_status(ticket_id: str, status: TicketStatus) -> Ticket:
 
 @database_error_handler
 @validate_fields(Ticket)
-def update_ticket(ticket_id: str | int, **kwargs) -> Ticket:
-    query = {"id": str(ticket_id)}
+def update_ticket(id: str , **kwargs) -> Ticket:
+    query = {"id": str(id)}
     update = {"$set": kwargs}
     result = ticket_collection.find_one_and_update(query, update, return_document=True)
     if not result:

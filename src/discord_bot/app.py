@@ -113,7 +113,7 @@ async def assign_role(
 
     # Update the ticket in the database
     ticket = update_ticket(
-        ticket_id=ctx.interaction.channel_id,
+        id=str(ctx.interaction.channel_id),
         support_role=support_role,
         issue_level=issue_level_enum.value
     )
@@ -127,6 +127,8 @@ async def assign_role(
         await ctx.interaction.channel.edit(category=ticket_manager.urgent_category)
     elif issue_level_enum == IssueLevel.CRITICAL:
         await ctx.interaction.channel.edit(category=ticket_manager.critical_category)
+    else:
+        await ctx.interaction.channel.edit(category=await ticket_manager.get_ticket_category())
 
     # Build the embed message
     note_message = f"\nNote: {note}" if note else ""

@@ -14,10 +14,10 @@ class TicketStatus(str, Enum):
 
 
 class IssueLevel(str, Enum):
-    GENERAL = "GENERAL"
+    NORMAL = "NORAML"
     URGENT = "URGENT"
     CRITICAL = "CRITICAL"
-    
+
 class SupportRole(str, Enum):
     GENERAL = "GENERAL"
     TECHNICAL = "TECHNICAL"
