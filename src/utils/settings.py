@@ -1,5 +1,6 @@
 from .mongo_client import get_database
 from typing_extensions import List
+import os
 
 
 class GuildSettings:
@@ -21,7 +22,12 @@ class GuildSettings:
         
         if not isinstance(self.support_team_role_id, int):
             raise ValueError("Support team role ID is not set or not an integer")
-
+        
+        self.admin_role_id = int(os.getenv("ADMIN_ROLE_ID"))
+        self.manager_role_id = int(os.getenv("MANAGER_ROLE_ID"))
+        self.developer_role_id = int(os.getenv("DEVELOPER_ROLE_ID"))
+        self.support_team_role_id = int(os.getenv("SUPPORT_TEAM_ROLE_ID"))
+        
 
     def load_settings(self):
         data = self.collection.find_one({"id": "guild_settings"})
