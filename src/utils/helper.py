@@ -2,7 +2,8 @@ from snowflake import SnowflakeGenerator
 from discord_webhook import DiscordWebhook
 from discord import Embed
 
-from flask import request
+from flask import request, Request
+
 from flask_limiter.util import get_remote_address
 
 from typing import List, Optional, Union
@@ -92,8 +93,12 @@ def send_webhook_message(
 def rate_limit_handler():
     # Safely retrieve the user ID
     user_id = getattr(request, "user_id", None)  # OR use g.user_id
-    print(user_id)
     if user_id:
         return str(user_id)  # Use user ID for rate limiting
     else:
         return get_remote_address()  # Fallback to IP-based limiting
+    
+    
+
+def send_error_log(error_type: str, trackback: str, request: Request):
+    ...
