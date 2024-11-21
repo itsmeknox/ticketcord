@@ -9,10 +9,11 @@ class APIException(Exception):
 
 
 
-    def __init__(self, message: str = "An error occurred", status_code: int = 500, extra: dict=None, error: Exception=None) -> None:
+    def __init__(self,error_name: str, message: str = "An error occurred", status_code: int = 500, extra: dict=None, error: Exception=None) -> None:
         super().__init__(message)  # Initialize the base Exception class
         self.message = message
         self.status_code = status_code
+        self.error_name = error_name
 
 
 
@@ -27,7 +28,7 @@ class APIException(Exception):
     def to_response(self):
         """Convert the exception to a Flask response."""
         response = {
-            "status": "error",
+            "error": self.error_name.capitalize(),
             "message": self.message,
         }
         
@@ -51,7 +52,7 @@ class InternalServerError(CriticalAPIException):
         self.message = message if message else "500 Internal Server Error"
         self.status_code = 500
 
-        super().__init__(message=message, status_code=self.status_code, extra=extra, error=error)
+        super().__init__(error_name="INTERNAL_SERVER_ERROR", message=message, status_code=self.status_code, extra=extra, error=error)
 
 
 
@@ -61,7 +62,7 @@ class DatabaseError(CriticalAPIException):
         self.message = message if message else "500 Internal Server Error"
         self.status_code = 500
 
-        super().__init__(message=message, status_code=self.status_code, extra=extra, error=error)
+        super().__init__(error_name="DATABASE_ERROR", message=message, status_code=self.status_code, extra=extra, error=error)
 
 
 # User errors
@@ -71,7 +72,7 @@ class AuthenticationError(HandledApiException):
         self.message = message if message else "401 Unauthorized"
         self.status_code = 401
         
-        super().__init__(message=message, status_code=self.status_code, extra=extra)
+        super().__init__(error_name="UNAUTHORIZED", message=message, status_code=self.status_code, extra=extra)
 
 
 
@@ -82,7 +83,7 @@ class NotfoundError(HandledApiException):
         self.message = message if message else "404 Not Found"
         self.status_code = 404
         
-        super().__init__(message=message, status_code=self.status_code, extra=extra)
+        super().__init__(error_name="NOT_FOUND", message=message, status_code=self.status_code, extra=extra)
 
 
 class ForbiddenError(HandledApiException):
@@ -91,4 +92,4 @@ class ForbiddenError(HandledApiException):
         self.message = message if message else "You do not have permission to do this action."
         self.status_code = 403
 
-        super().__init__(message=message, status_code=self.status_code, extra=extra)
+        super().__init__(error_name="FORBIDDEN", message=message, status_code=self.status_code, extra=extra)
