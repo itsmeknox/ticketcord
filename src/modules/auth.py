@@ -3,7 +3,7 @@ import jwt
 import time
 
 
-from utils.exceptions import AuthenticationFailed
+from utils.exceptions import AuthenticationError
 
 class JWT:
     def __init__(self, encryption_key: str) -> None:
@@ -22,6 +22,6 @@ class JWT:
         try:
             return jwt.decode(token, self.encryption_key, algorithms=['HS256'])
         except Exception as e:
-            raise AuthenticationFailed
+            raise AuthenticationError
 
     
