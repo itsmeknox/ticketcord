@@ -55,6 +55,18 @@ class TicketManager:
         if not self.transcript_channel:
             raise ValueError("Transcript channel not found in the guild.")
         
+        self.critical_category = self.guild.get_channel(int(os.getenv("CRITICAL_TICKET_CATEGORY_ID")))
+        if not self.critical_category:
+            raise ValueError("Critical ticket category not found in the guild.")
+        
+        self.urgent_category = self.guild.get_channel(int(os.getenv("URGENT_TICKET_CATEGORY_ID")))
+        if not self.urgent_category:
+            raise ValueError("Urgent ticket category not found in the guild.")
+
+        
+        
+
+        
 
 
     async def get_ticket_category_id(self):
@@ -72,6 +84,8 @@ class TicketManager:
             raise ValueError("No valid category found to clone.")
         
         category = await category_to_clone.clone(name=f"Ticket Category - {len(self.category_ids) + 1}")
+        category.move(category_to_clone.position + 1)
+
         self.append_category_id(category.id)
         return category
     
