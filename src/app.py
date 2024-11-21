@@ -11,8 +11,9 @@ from discord_bot import run_bot
 
 
 from utils.exceptions import (
-    InternalServerError, 
-    AuthenticationFailed
+    HandledApiException,
+    CriticalAPIException
+    
 )
 
 from routes.messages import bp_messages
@@ -24,6 +25,7 @@ from discord.errors import DiscordException
 
 import json
 import os
+import traceback
 
 load_dotenv()
 app = Flask(__name__)
@@ -60,17 +62,16 @@ register_blueprints()
 initialize_limiter()
 
 
-@app.errorhandler(AuthenticationFailed)
-def handle_auth_failed(e: AuthenticationFailed):
-    return e.to_response()
-
-@app.errorhandler(InternalServerError)
-def handle_internal_server_error(e: InternalServerError):
-    return e.to_response()
-
+# ===================== User Error Handlers =====================
 @app.errorhandler(RateLimitExceeded)
 def handle_rate_limit_exceeded(e: RateLimitExceeded):
     return jsonify({"error": "ratelimit_exceeded", "message": f"You are being ratelimited only {e.description} request are allowed"}), 429
+
+
+@app.errorhandler(HandledApiException)
+def handle_handled_api_exception(e: HandledApiException):
+    return e.to_response()
+
 
 
 @app.errorhandler(ValidationError)
@@ -93,11 +94,33 @@ def validation_error(e: ValidationError):
 
     return jsonify({"message": "Invalid form of body", "errors": errors}), 400
  
- 
+
+
+# ===================== Critical Error Handlers =====================
+@app.errorhandler(CriticalAPIException)
+def handle_critical_api_exception(e: CriticalAPIException):
+    # Log the error
+    return e.to_response()
+
 @app.errorhandler(DiscordException)
 def handle_discord_exception(e: DiscordException):
-    print(e)
+    # Log the error
+    trackback_details = traceback.format_exc()
+    print(trackback_details)
+    
+    # Need to implement logic to handle the request
+    
     return jsonify({"message": "An error occurred while trying to interact with discord"}), 500
+
+
+@app.errorhandler(Exception)
+def handle_unhandled_exception(e: Exception):
+    traceback_details = traceback.format_exc() if os.getenv("SERVER_MODE") == "DEVELOPMENT" else None
+    
+    # Log the error
+    return jsonify({"message": "An error occurred", **({"traceback": traceback_details} if traceback_details else {})}), 500
+
+ 
 
 
 def run_app():
