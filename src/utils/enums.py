@@ -11,3 +11,15 @@ class TicketStatus(str, Enum):
     ACTIVE = "ACTIVE"
     CLOSED = "CLOSED"
     DELETED = "DELETED"
+
+
+class IssueLevel(str, Enum):
+    GENERAL = "GENERAL"
+    URGENT = "URGENT"
+    CRITICAL = "CRITICAL"
+    
+class SupportRole(str, Enum):
+    GENERAL = "GENERAL"
+    TECHNICAL = "TECHNICAL"
+    MANAGER = "MANAGER"
+    ADMIN = "ADMIN"
