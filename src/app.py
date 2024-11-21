@@ -98,7 +98,7 @@ def validation_error(e: ValidationError):
 
         errors.append(data)
 
-    return jsonify({"message": "Invalid form of body", "errors": errors}), 400
+    return jsonify({"error": "BAD_REQUEST", "message": "Invalid form of body", "errors": errors}), 400
  
 
 # ===================== Critical Error Handlers =====================
@@ -114,11 +114,13 @@ def handle_critical_api_exception(e: CriticalAPIException):
 def handle_discord_exception(e: DiscordException):
     # Log the error
     trackback_details = traceback.format_exc()
+    print("=====================Discord Exception=====================\n")
     print(trackback_details)
+    print("\n===========================================================")
     
     send_error_log("Discord Exception", trackback_details, e)
     
-    return jsonify({"message": "An error occurred while trying to interact with discord"}), 500
+    return jsonify({"error": "INTERNAL_SERVER_ERROR", "message": "An error occurred while trying to interact with discord"}), 500
 
 
 @app.errorhandler(Exception)
