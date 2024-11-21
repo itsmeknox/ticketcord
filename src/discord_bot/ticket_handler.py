@@ -69,7 +69,7 @@ class TicketManager:
         
 
 
-    async def get_ticket_category_id(self):
+    async def get_ticket_category(self):
         if not self.guild:
             raise ValueError("Guild not initialized. Call `initialize` first.")
         
@@ -92,7 +92,6 @@ class TicketManager:
     async def send_transcript(self, ticket: Ticket, transcript_str: str, reason: str = None):
         embed = Embed(
             title="Ticket Transcript",
-            
         )
         
         embed.add_field(
@@ -124,7 +123,7 @@ class TicketManager:
         if not self.guild:
             raise ValueError("Guild not initialized. Call `initialize` first.")
 
-        category = await self.get_ticket_category_id()
+        category = await self.get_ticket_category()
         channel = await category.create_text_channel(
             name=f"{user.username}-ticket",
             topic=f"Ticket for {user.username}",
