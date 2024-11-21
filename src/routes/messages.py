@@ -5,6 +5,7 @@ from database.tickets import fetch_ticket
 from utils.helper import send_webhook_message
 
 
+from utils.exceptions import NotfoundError, ForbiddenError
 
 from utils.schema import (
     Message, 
@@ -24,9 +25,12 @@ def create_message(ticket_user: TicketUser, ticket_id: str):
         ticket_id=ticket_id,
         user_id=ticket_user.id
     )
-    if not ticket or ticket.status != 'ACTIVE':
-        return jsonify({"error": "Ticket not found or not active"}), 404
+    if not ticket:
+        raise NotfoundError(message="Ticket not found")
     
+    if ticket.status != 'ACTIVE':
+        raise ForbiddenError(message="This action is not allowed on a closed ticket")
+
     message_payload = SendMessageRequest.model_validate(request.get_json())
     
     message = Message(
@@ -56,7 +60,7 @@ def get_messages(ticket_user: TicketUser, ticket_id: str):
         user_id=ticket_user.id
     )
     if ticket is None:
-        return jsonify({"error": "Ticket not found"}), 404
+        raise NotfoundError(message="Ticket not found")
     
     messages = fetch_messages(ticket_id)
     return jsonify([MessageResponse(**message.model_dump()).model_dump() for message in messages]), 200
