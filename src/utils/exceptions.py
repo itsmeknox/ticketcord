@@ -16,7 +16,7 @@ class APIException(Exception):
 
 
 
-    def get_trackback(self):
+    def get_traceback(self):
         """Capture and format the traceback of the exception."""
         if self.__traceback__:
             return "".join(traceback.format_exception(type(self), self, self.__traceback__))
