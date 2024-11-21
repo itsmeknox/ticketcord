@@ -16,6 +16,8 @@ from utils.schema import (
     TicketResponse
 )
 
+from utils.exceptions import AuthenticationError, InternalServerError, NotfoundError
+
 from discord.errors import DiscordException
 
 from discord_bot.app import (
@@ -63,10 +65,9 @@ def create_ticket(ticket_user: TicketUser):
         user=ticket_user
     ))
     except DiscordException as e:
-        return jsonify({"error": str(e)}), 500  
+        raise InternalServerError(message="An error occurred while creating the ticket", error=e)
     
-    print(channel_id)
-    
+        
     ticket_data = Ticket(
         id=str(channel_id),
         user_id=ticket_user.id,
@@ -83,7 +84,6 @@ def create_ticket(ticket_user: TicketUser):
     insert_ticket(ticket_data)
     data = TicketResponse(**ticket_data.model_dump()).model_dump()
 
-    print(data)
     return jsonify(data), 201
 
 
@@ -96,7 +96,7 @@ def get_ticket(ticket_user: TicketUser, ticket_id: int):
         user_id=ticket_user.id
     )
     if not ticket_data:
-        return jsonify({"error": "Ticket not found"}), 404
+        raise NotfoundError(message="Ticket not found")
 
     return jsonify(TicketResponse(**ticket_data.model_dump()).model_dump()), 200
 
@@ -110,4 +110,3 @@ def get_tickets(ticket_user: TicketUser):
     ticket_list = [TicketResponse(**ticket.model_dump()).model_dump() for ticket in tickets]
     
     return jsonify(ticket_list), 200
-
