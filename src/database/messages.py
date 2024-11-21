@@ -4,10 +4,10 @@ from utils.schema import (
     Message
 )
 
-db = get_database()['messages']
+message_collection = get_database()['messages']
 
 def insert_message(data: Message):
-    result = db.insert_one(
+    result = message_collection.insert_one(
         data.model_dump()
     )
     return result
@@ -16,7 +16,7 @@ def fetch_messages(ticket_id: int) -> list[Message]:
     query = {
         'ticket_id': ticket_id
     }
-    result = db.find(query)
+    result = message_collection.find(query)
     return [Message(**data) for data in result]
 
 def update_message_content(ticket_id: str, message_id: str, content: str) -> Message:
@@ -27,7 +27,7 @@ def update_message_content(ticket_id: str, message_id: str, content: str) -> Mes
         'id': str(message_id),
         'ticket_id': str(ticket_id)
     }
-    data = db.find_one_and_update(
+    data = message_collection.find_one_and_update(
         query,
         {'$set': {'content': content}},
         return_document=True
@@ -38,13 +38,11 @@ def update_message_content(ticket_id: str, message_id: str, content: str) -> Mes
     
     return None
 
-
-
 def delete_message(message_id: str):
     query = {
         'id': str(message_id)
     }
-    data = db.find_one_and_delete(query)
+    data = message_collection.find_one_and_delete(query)
     if data:
         return Message(**data)
     return None

@@ -3,9 +3,9 @@ from discord.ext import commands
 from utils.schema import Ticket, Message
 
 from database.tickets import fetch_ticket
-from database.messages import insert_message
+from database.messages import insert_message, update_message_content, delete_message
 
-from socket_manager.send_events import send_message_event
+from socket_manager.send_events import send_message_event, message_edit_event, message_delete_event
 
 import asyncio
 import discord
@@ -14,6 +14,22 @@ from utils.enums import TicketStatus
 
 from utils.settings import guild_settings
 
+import logging
+
+logger = logging.getLogger("bot_logger")
+
+def filter_message(message: discord.Message):
+    return not message.author.bot and not message.mentions
+
+async def fetch_active_ticket(channel_id: str) -> Ticket:
+    ticket: Ticket = await asyncio.to_thread(fetch_ticket, channel_id)
+    if not ticket:
+        logger.info(f"Ticket not found for channel ID: {channel_id}")
+        return None
+    if ticket.status != TicketStatus.ACTIVE:
+        logger.info(f"Ticket {ticket.id} is not active")
+        return None
+    return ticket
 
 class MessageHandler(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -21,31 +37,20 @@ class MessageHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, discord_message: discord.Message):
-        if discord_message.author.bot:
+        if not filter_message(discord_message):
+            logger.info("Message filtered out")
             return
-        
 
-
-        elif discord_message.mentions:
-            print("Mention found returning")
-            return
-        
-        ticket: Ticket = await asyncio.to_thread(fetch_ticket, str(discord_message.channel.id))
+        ticket = await fetch_active_ticket(str(discord_message.channel.id))
         if not ticket:
-            print("Ticket not found returning")
             return
-        
-        if ticket.status != TicketStatus.ACTIVE:
-            print("Ticket is not active returning")
-            return
-        
+
         if not discord_message.content:
-            print("Message has no content returning")
+            logger.info("Message has no content")
             return
-        
-        
 
         message = Message(
+            id=str(discord_message.id),
             ticket_id=ticket.id,
             author_id=str(discord_message.author.id),
             author_name=discord_message.author.display_name or discord_message.author.name,
@@ -54,9 +59,48 @@ class MessageHandler(commands.Cog):
         )
         insert_message(message)
         send_message_event(user_id=ticket.user_id, message=message)
-        
-        print("Message sent: ", message.content)
+
+        logger.info(f"Message sent: {message.content}")
         if guild_settings.replay_to_success_message:
             await discord_message.reply("Message sent successfully!..", delete_after=5)
-        
-        
+
+    @commands.Cog.listener()
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        if before.author.bot:
+            return
+
+        ticket = await fetch_active_ticket(str(before.channel.id))
+        if not ticket:
+            return
+
+        if not after.content:
+            logger.info("Edited message has no content")
+            return
+
+        message = await asyncio.to_thread(update_message_content, str(before.channel.id), str(before.id), after.content)
+        if not message:
+            logger.error("Message not found, failed to edit")
+            return
+
+        message_edit_event(user_id=ticket.user_id, message=message)
+
+        logger.info(f"Message edited: {message.content}")
+        await after.reply("Message edited successfully!..", delete_after=5)
+
+    @commands.Cog.listener()
+    async def on_message_delete(self, message: discord.Message):
+        if message.author.bot:
+            return
+
+        ticket = await fetch_active_ticket(str(message.channel.id))
+        if not ticket:
+            return
+
+        message = await asyncio.to_thread(delete_message, str(message.id))
+        if not message:
+            logger.error("Message not found, failed to delete")
+            return
+
+        logger.info(f"Message deleted: {message.content}")
+        message_delete_event(user_id=ticket.user_id, message=message)
+
