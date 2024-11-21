@@ -1,33 +1,91 @@
-
+import traceback
 from flask import jsonify
+from pydantic import ValidationError
 
+
+# Base exception class
 class APIException(Exception):
-    """Base class for exceptions in this module."""
-    
+    """Base class for API exceptions."""
+
+
+
+    def __init__(self, message: str = "An error occurred", status_code: int = 500, extra: dict=None, error: Exception=None) -> None:
+        super().__init__(message)  # Initialize the base Exception class
+        self.message = message
+        self.status_code = status_code
+
+        self.capture_traceback()
+
+
+
+    def capture_traceback(self):
+        """Capture and format the traceback of the exception."""
+        if self.__traceback__:
+            self.traceback = "".join(traceback.format_exception(type(self), self, self.__traceback__))
+        else:
+            self.traceback = traceback.format_exc()
+            
     def to_response(self):
-        return jsonify({
+        """Convert the exception to a Flask response."""
+        response = {
             "status": "error",
-            "message": self.message
-        }), 401
+            "message": self.message,
+        }
+        
+        return jsonify(response), self.status_code
 
 
-class AuthenticationFailed(APIException):
+class HandledApiException(APIException):
+    """Base class for API exceptions that are handled."""
+    pass
+
+class CriticalAPIException(APIException):
+    """Base class for API exceptions that are critical."""
+    pass
+
+
+
+# Critical errors
+class InternalServerError(CriticalAPIException):
+    """Raised when an internal server error occurs."""
+    def __init__(self, message: str | None=None, extra: dict=None, error: Exception=None) -> None:
+        self.message = message if message else "500 Internal Server Error"
+        super().__init__(message=message, status_code=self.status_code, extra=extra, error=error)
+
+
+
+class DatabaseError(CriticalAPIException):
+    """Raised when an internal server error occurs."""
+    def __init__(self, message: str | None, extra: dict=None, error: Exception=None) -> None:
+        self.message = message if message else "500 Internal Server Error"
+        super().__init__(message=message, status_code=self.status_code, extra=extra, error=error)
+
+
+# User errors
+class AuthenticationError(HandledApiException):
     """Raised when the user is not authorised to access the resource."""
-    def __init__(self, message: str | None=None) -> None:
+    def __init__(self, message: str | None=None, extra: dict=None) -> None:
         self.message = message if message else "401 Unauthorized"
-        super().__init__(message)
+        self.status_code = 401
+        
+        super().__init__(message=message, status_code=self.status_code, extra=extra)
 
 
 
-class InternalServerError(APIException):
-    """Raised when an internal server error occurs."""
-    def __init__(self, message: str | None) -> None:
-        self.message = message if message else "500 Internal Server Error"
-        super().__init__(message)
+
+class NotfoundError(HandledApiException):
+    """Raised when the requested resource is not found."""
+    def __init__(self, message: str | None=None, extra: dict=None) -> None:
+        self.message = message if message else "404 Not Found"
+        self.status_code = 404
+        
+        super().__init__(message=message, status_code=self.status_code, extra=extra)
 
 
-class DatabaseError(APIException):
-    """Raised when an internal server error occurs."""
-    def __init__(self, message: str | None) -> None:
-        self.message = message if message else "500 Internal Server Error"
-        super().__init__(message)
+class ForbiddenError(HandledApiException):
+    """Raised when the user is not authorised to access the resource."""
+    def __init__(self, message: str | None=None, extra: dict=None) -> None:
+        self.message = message if message else "You do not have permission to do this action."
+        self.status_code = 403
+
+        super().__init__(message=message, status_code=self.status_code, extra=extra)
