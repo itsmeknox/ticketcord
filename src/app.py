@@ -11,7 +11,6 @@ from flask_limiter.util import get_remote_address
 
 from dotenv import load_dotenv
 from pydantic import ValidationError
-from waitress import serve
 from discord_bot import run_bot
 
 
@@ -20,12 +19,12 @@ from utils.exceptions import (
     CriticalAPIException
     
 )
+from utils.helper import send_error_log
 
 from routes.messages import bp_messages
 from routes.tickets import bp_tickets, ticket_limiter
 from socket_manager.handler import SocketHandler
 from socket_manager.send_events import socket_sio_init
-
 from discord.errors import DiscordException
 
 import json
@@ -102,11 +101,13 @@ def validation_error(e: ValidationError):
     return jsonify({"message": "Invalid form of body", "errors": errors}), 400
  
 
-
 # ===================== Critical Error Handlers =====================
 @app.errorhandler(CriticalAPIException)
 def handle_critical_api_exception(e: CriticalAPIException):
     # Log the error
+    traceback_details = e.get_traceback()
+    print(traceback_details)
+    send_error_log("Critical API Exception", traceback_details, e)
     return e.to_response()
 
 @app.errorhandler(DiscordException)
@@ -115,17 +116,17 @@ def handle_discord_exception(e: DiscordException):
     trackback_details = traceback.format_exc()
     print(trackback_details)
     
-    # Need to implement logic to handle the request
+    send_error_log("Discord Exception", trackback_details, e)
     
     return jsonify({"message": "An error occurred while trying to interact with discord"}), 500
 
 
 @app.errorhandler(Exception)
 def handle_unhandled_exception(e: Exception):
-    traceback_details = traceback.format_exc() if os.getenv("SERVER_MODE") == "DEVELOPMENT" else None
+    traceback_details = traceback.format_exc()
     
-    # Log the error
-    return jsonify({"message": "An error occurred", **({"traceback": traceback_details} if traceback_details else {})}), 500
+    send_error_log("Unhandled Exception", traceback_details, e)
+    return jsonify({"message": "An error occurred",}), 500
 
  
 
