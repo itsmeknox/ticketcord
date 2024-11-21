@@ -39,7 +39,7 @@ class Ticket(BaseModel):
     updated_at: int = Field(default_factory=generate_timestamp, description="Ticket update timestamp")
 
     support_role: SupportRole = Field(SupportRole.GENERAL, description="Support role assigned to the ticket")
-    issue_level: IssueLevel = Field(IssueLevel.GENERAL, description="Issue level of the ticket")
+    issue_level: IssueLevel = Field(IssueLevel.NORMAL, description="Issue level of the ticket")
 
 # Message Model
 class Message(BaseModel):
