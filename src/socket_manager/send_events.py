@@ -8,7 +8,7 @@ def socket_sio_init(socket_client: SocketIO):
     sio = socket_client
 
 def send_create_channel_event(ticket: Ticket):
-    sio.emit("ticket", ticket.model_dump(), room=ticket.user_id)
+    sio.emit("ticket", ticket.model_dump(exclude={"webhook_url"}), room=ticket.user_id)
 
 def ticket_edit_event(ticket: Ticket):
     sio.emit("edit_ticket", ticket.model_dump(), room=ticket.user_id)
@@ -25,5 +25,3 @@ def message_delete_event(user_id: int, message: Message):
 
 def ticket_close_event(user_id: int, ticket_id: str):
     sio.emit("ticket_closed", {"id": str(ticket_id)}, room=user_id)
-    
-    
