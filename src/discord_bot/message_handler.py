@@ -24,10 +24,11 @@ def filter_message(message: discord.Message):
 async def fetch_active_ticket(channel_id: str) -> Ticket:
     ticket: Ticket = await asyncio.to_thread(fetch_ticket, channel_id)
     if not ticket:
-        logger.info(f"Ticket not found for channel ID: {channel_id}")
+        print(f"Ticket not found for channel ID: {channel_id}")
         return None
+    
     if ticket.status != TicketStatus.ACTIVE:
-        logger.info(f"Ticket {ticket.id} is not active")
+        print(f"Ticket {ticket.id} is not active")
         return None
     return ticket
 
@@ -38,7 +39,7 @@ class MessageHandler(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, discord_message: discord.Message):
         if not filter_message(discord_message):
-            logger.info("Message filtered out")
+            print("Message filtered out")
             return
 
         ticket = await fetch_active_ticket(str(discord_message.channel.id))
@@ -46,7 +47,7 @@ class MessageHandler(commands.Cog):
             return
 
         if not discord_message.content:
-            logger.info("Message has no content")
+            print("Message has no content")
             return
 
         message = Message(
@@ -60,7 +61,7 @@ class MessageHandler(commands.Cog):
         insert_message(message)
         send_message_event(user_id=ticket.user_id, message=message)
 
-        logger.info(f"Message sent: {message.content}")
+        print(f"Message sent: {message.content}")
         if guild_settings.replay_to_success_message:
             await discord_message.reply("Message sent successfully!..", delete_after=5)
 
@@ -74,17 +75,17 @@ class MessageHandler(commands.Cog):
             return
 
         if not after.content:
-            logger.info("Edited message has no content")
+            print("Edited message has no content")
             return
 
         message = await asyncio.to_thread(update_message_content, str(before.channel.id), str(before.id), after.content)
         if not message:
-            logger.error("Message not found, failed to edit")
+            print("Message not found, failed to edit")
             return
 
         message_edit_event(user_id=ticket.user_id, message=message)
 
-        logger.info(f"Message edited: {message.content}")
+        print(f"Message edited: {message.content}")
         await after.reply("Message edited successfully!..", delete_after=5)
 
     @commands.Cog.listener()
@@ -98,9 +99,9 @@ class MessageHandler(commands.Cog):
 
         message = await asyncio.to_thread(delete_message, str(message.id))
         if not message:
-            logger.error("Message not found, failed to delete")
+            print("Message not found, failed to delete")
             return
 
-        logger.info(f"Message deleted: {message.content}")
+        print(f"Message deleted: {message.content}")
         message_delete_event(user_id=ticket.user_id, message=message)
 
