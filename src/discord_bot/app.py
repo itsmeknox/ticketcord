@@ -9,10 +9,12 @@ from .ticket_handler import TicketManager, TranscriptView
 from .message_handler import MessageHandler
 from chat_exporter import export
 
-from database.tickets import update_ticket_status, fetch_ticket
+from database.tickets import update_ticket_status, update_ticket
 from socket_manager.send_events import ticket_close_event
-from utils.enums import TicketStatus
+from utils.enums import TicketStatus, SupportRole, IssueLevel
+from utils.settings import guild_settings
 
+from discord import option
 
 bot = commands.Bot(intents=discord.Intents.all())
 ticket_manager = TicketManager(bot=bot)
@@ -73,7 +75,81 @@ async def delete_ticket(ctx: discord.ApplicationContext, reason: str):
     await ticket_manager.send_transcript(ticket, transcript_file, reason)
     await ctx.interaction.channel.delete()
 
-    
+
+# Assign Role
+@bot.slash_command(name="assign_role", description="Assign a role and move the ticket to a category.")
+@option(
+    "role",
+    description="Select a role to assign",
+    choices=[role.value for role in SupportRole],  # Use enum values for consistency
+    required=True
+)
+@option(
+    "issue_level",
+    description="Select the issue level",
+    choices=[level.value for level in IssueLevel],  # Use enum values for consistency
+    required=True
+)
+async def assign_role(
+    ctx: discord.ApplicationContext,
+    role: str,
+    issue_level: str,
+    note: str = None
+):
+    await ctx.defer()
+
+    # Map inputs to enums
+    support_role_mapping = {role.value: role for role in SupportRole}
+    issue_level_mapping = {level.value: level for level in IssueLevel}
+
+    support_role = support_role_mapping.get(role)
+    issue_level_enum = issue_level_mapping.get(issue_level)
+
+    if not support_role:
+        return await ctx.respond("Invalid role selected.", ephemeral=True)
+
+    if not issue_level_enum:
+        return await ctx.respond("Invalid issue level selected.", ephemeral=True)
+
+    # Update the ticket in the database
+    ticket = update_ticket(
+        ticket_id=ctx.interaction.channel_id,
+        support_role=support_role,
+        issue_level=issue_level_enum.value
+    )
+
+    if not ticket:
+        return await ctx.respond("This channel is not a ticket channel.", ephemeral=True)
+
+
+    # Edit channel category based on issue level
+    if issue_level_enum == IssueLevel.URGENT:
+        await ctx.interaction.channel.edit(category=ticket_manager.urgent_category)
+    elif issue_level_enum == IssueLevel.CRITICAL:
+        await ctx.interaction.channel.edit(category=ticket_manager.critical_category)
+
+    # Build the embed message
+    note_message = f"\nNote: {note}" if note else ""
+    embed = discord.Embed(
+        title="Role Assigned",
+        description=f"Role: {support_role.value}\nIssue Level: {issue_level}{note_message}",
+        color=discord.Color.blue()
+    )
+
+    role_mention = {
+        SupportRole.ADMIN: guild_settings.admin_role_id,
+        SupportRole.MANAGER: guild_settings.manager_role_id,
+        SupportRole.TECHNICAL: guild_settings.developer_role_id,
+        SupportRole.GENERAL: guild_settings.support_team_role_id
+    }.get(support_role, guild_settings.support_team_role_id)
+
+    if not role_mention:
+        return await ctx.respond("Role mention configuration is missing.", ephemeral=True)
+
+    await ctx.interaction.channel.send(f"<@&{role_mention}>", embed=embed)
+    await ctx.respond(f"Ticket successfully updated with role {role} and issue level {issue_level}.")
+
+
 
 @bot.slash_command(name="delete_all_channels_in_category")
 async def create_ticket(ctx: discord.ApplicationContext):
