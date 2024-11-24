@@ -4,20 +4,14 @@ from typing_extensions import List
 from utils.mongo_client import get_database
 from pydantic import ValidationError
 
+from modules.decorator import database_error_handler
 
 from modules.validator import validate_fields
 
 ticket_collection = get_database()["tickets"]
 
 
-def database_error_handler(func):
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except ValidationError as e:
-            raise Exception(f"Database Validation error: {e}")
-        
-    return wrapper
+
 
 
 @database_error_handler
