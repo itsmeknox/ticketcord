@@ -95,8 +95,9 @@ def get_ticket(ticket_user: TicketUser, ticket_id: int):
         ticket_id=ticket_id,
         user_id=ticket_user.id
     )
-    if not ticket_data:
+    if not ticket_data or ticket_data.status != TicketStatus.ACTIVE:
         raise NotfoundError(message="Ticket not found")
+
 
     return jsonify(TicketResponse(**ticket_data.model_dump()).model_dump()), 200
 

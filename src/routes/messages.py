@@ -59,7 +59,7 @@ def get_messages(ticket_user: TicketUser, ticket_id: str):
         ticket_id=ticket_id,
         user_id=ticket_user.id
     )
-    if ticket is None:
+    if ticket is None or ticket.status != 'ACTIVE':
         raise NotfoundError(message="Ticket not found")
     
     messages = fetch_messages(ticket_id)
