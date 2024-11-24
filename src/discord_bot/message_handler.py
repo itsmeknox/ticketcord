@@ -19,7 +19,10 @@ import logging
 logger = logging.getLogger("bot_logger")
 
 def filter_message(message: discord.Message):
-    return not message.author.bot and not message.mentions
+    if message.author.bot or message.mentions:
+        return False
+
+    return True
 
 async def fetch_active_ticket(channel_id: str) -> Ticket:
     ticket: Ticket = await asyncio.to_thread(fetch_ticket, channel_id)
@@ -64,6 +67,7 @@ class MessageHandler(commands.Cog):
         print(f"Message sent: {message.content}")
         if guild_settings.replay_to_success_message:
             await discord_message.reply("Message sent successfully!..", delete_after=5)
+
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
