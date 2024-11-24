@@ -145,7 +145,7 @@ def run_app():
         http_server.serve_forever()
     else:
         print("Running in development mode")
-        app.run(host='127.0.0.1', port=PORT, debug=False)
+        app.run(host='0.0.0.0', port=PORT, debug=False)
 
 
 if __name__ == "__main__":
