@@ -2,7 +2,7 @@
 from functools import wraps
 from flask import request
 from dotenv import load_dotenv
-from utils.exceptions import AuthenticationError, InternalServerError
+from utils.exceptions import AuthenticationError, InternalServerError, DatabaseError
 from utils.schema import TicketUser
 
 from pydantic import ValidationError
@@ -33,3 +33,12 @@ def ticket_user_required(func):
         return func(ticket_user, *args, **kwargs)
     return wrapper
 
+
+def database_error_handler(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ValidationError as e:
+            raise DatabaseError(f"An unexpected error occurred")
+        
+    return wrapper
