@@ -1,6 +1,3 @@
-import os
-
-
 from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
 
