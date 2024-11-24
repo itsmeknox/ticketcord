@@ -93,7 +93,7 @@ class TicketsResponse(BaseModel):
 class MessageResponse(BaseModel):
     id: str
     ticket_id: str
-    author_id: int
+    author_id: str
     author_name: str
     content: str
     attachments: List[HttpUrl]
