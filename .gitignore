@@ -6,5 +6,4 @@ TODO
 .venv
 .env
 
-*.html
 tailwind.config.js

@@ -1,0 +1,25 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Title{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.5.1/socket.io.min.js"></script>
+
+</head>
+<body class="flex items-center justify-center h-screen w-full">
+
+    <div id="toast" class="fixed bottom-5 right-5 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg hidden z-50">
+        <p id="toast-message"></p>
+    </div>
+
+
+    {% block content %}
+        <!-- content will render here -->
+    {% endblock %}
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+
+</body>
+</html>
