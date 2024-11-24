@@ -14,6 +14,7 @@ from database.tickets import update_ticket_status, update_ticket
 from socket_manager.send_events import ticket_close_event
 from utils.enums import TicketStatus, SupportRole, IssueLevel
 from utils.settings import guild_settings
+from utils.schema import TicketResponse
 
 from utils.helper import send_disord_error_log
 
@@ -69,8 +70,8 @@ async def delete_ticket(ctx: discord.ApplicationContext, reason: str):
     if not ticket:
         await ctx.respond(f"Failed to update ticket status in database", ephemeral=True)
         return
-
-    ticket_close_event(ticket.user_id, ticket)
+    
+    ticket_close_event(ticket.user_id, TicketResponse.model_validate(ticket.model_dump()))
         
     await ctx.respond(embed=discord.Embed(title="Ticket Closed", description="This ticket has been closed deleting..."))
     
