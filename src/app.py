@@ -1,3 +1,6 @@
+import os
+
+
 from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
 
@@ -23,6 +26,9 @@ from utils.helper import send_error_log
 
 from routes.messages import bp_messages
 from routes.tickets import bp_tickets, ticket_limiter
+from routes.auth import auth_bp
+
+
 from socket_manager.handler import SocketHandler
 from socket_manager.send_events import socket_sio_init
 from discord.errors import DiscordException
@@ -62,6 +68,9 @@ def setup_socketio() -> SocketIO:
 def register_blueprints():
     app.register_blueprint(bp_tickets)
     app.register_blueprint(bp_messages)
+    app.register_blueprint(auth_bp)
+
+
 
 setup_socketio()
 register_blueprints()
@@ -123,7 +132,7 @@ def handle_discord_exception(e: DiscordException):
     return jsonify({"error": "INTERNAL_SERVER_ERROR", "message": "An error occurred while trying to interact with discord"}), 500
 
 
-@app.errorhandler(Exception)
+@app.errorhandler
 def handle_unhandled_exception(e: Exception):
     traceback_details = traceback.format_exc()
     
