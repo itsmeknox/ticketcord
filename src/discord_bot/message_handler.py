@@ -61,8 +61,8 @@ class MessageHandler(commands.Cog):
             content=discord_message.content,
             attachments=[attachment.url for attachment in discord_message.attachments]
         )
-        insert_message(message)
-        send_message_event(user_id=ticket.user_id, message=message)
+        await asyncio.to_thread(insert_message, message)
+        await asyncio.to_thread(send_message_event,user_id=ticket.user_id, message=message)
 
         print(f"Message sent: {message.content}")
         if guild_settings.replay_to_success_message:
@@ -87,7 +87,7 @@ class MessageHandler(commands.Cog):
             print("Message not found, failed to edit")
             return
 
-        message_edit_event(user_id=ticket.user_id, message=message)
+        await asyncio.to_thread(message_edit_event,user_id=ticket.user_id, message=message)
 
         print(f"Message edited: {message.content}")
         await after.reply("Message edited successfully!..", delete_after=5)
@@ -107,5 +107,5 @@ class MessageHandler(commands.Cog):
             return
 
         print(f"Message deleted: {message.content}")
-        message_delete_event(user_id=ticket.user_id, message=message)
+        await asyncio.to_thread(message_delete_event, user_id=ticket.user_id, message=message)
 
