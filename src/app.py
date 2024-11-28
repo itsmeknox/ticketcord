@@ -34,7 +34,7 @@ import json
 import os
 import traceback
 
-load_dotenv()
+# load_dotenv()
 app = Flask(__name__)
 
 CORS(app, resources={r"/*": {"origins": "*"}}, cors_allowed_origins="*")
