@@ -33,8 +33,8 @@ from discord.errors import DiscordException
 import json
 import os
 import traceback
-
-# load_dotenv()
+if os.getenv("SERVER_MODE") == "PRODUCTION":
+    load_dotenv()
 app = Flask(__name__)
 
 CORS(app, resources={r"/*": {"origins": "*"}}, cors_allowed_origins="*")
@@ -74,6 +74,13 @@ register_blueprints()
 initialize_limiter()
 
 
+# Socker Handler
+# ===================== SocketIO Handlers =====================
+@sio.on_error_default
+def error_handler(e):
+    traceback_details = traceback.format_exc()
+    
+    send_error_log("Socket Unhandled Error", traceback_details, e)
 # ===================== User Error Handlers =====================
 @app.errorhandler(RateLimitExceeded)
 def handle_rate_limit_exceeded(e: RateLimitExceeded):
