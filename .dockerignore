@@ -1,0 +1,14 @@
+
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+.vscode
+.idea
+*.iml
+.DS_Store
+src/__pycache__
+src/*.pyc
+src/*.pyo
+src/*.pyd

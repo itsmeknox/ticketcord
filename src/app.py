@@ -1,5 +1,5 @@
-from gevent.pywsgi import WSGIServer
-from geventwebsocket.handler import WebSocketHandler
+# from gevent.pywsgi import WSGIServer
+# from geventwebsocket.handler import WebSocketHandler
 
 # monkey.patch_all()
 
@@ -39,7 +39,7 @@ app = Flask(__name__)
 
 CORS(app, resources={r"/*": {"origins": "*"}}, cors_allowed_origins="*")
 
-sio = SocketIO(app, cors_allowed_origins="*", async_mode="gevent")
+sio = SocketIO(app, cors_allowed_origins="*")
 
 
 
@@ -147,8 +147,10 @@ def run_app():
         
     if os.getenv("SERVER_MODE") == "PRODUCTION":
         print("Running in production mode")
-        http_server = WSGIServer(('0.0.0.0', int(PORT)), app, handler_class=WebSocketHandler)
-        http_server.serve_forever()
+        # http_server = WSGIServer(('0.0.0.0', int(PORT)), app, handler_class=WebSocketHandler)
+        # http_server.serve_forever()
+        sio.run(app, host='0.0.0.0', port=5000)
+
     else:
         print("Running in development mode")
         app.run(host='0.0.0.0', port=PORT, debug=False)
