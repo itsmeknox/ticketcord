@@ -5,7 +5,7 @@ from database.tickets import fetch_ticket
 from utils.helper import send_webhook_message
 
 
-from utils.exceptions import NotfoundError, ForbiddenError
+from utils.exceptions import NotfoundError, ForbiddenError, InternalServerError
 
 from utils.schema import (
     Message, 
@@ -41,12 +41,16 @@ def create_message(ticket_user: TicketUser, ticket_id: str):
         attachments=message_payload.attachments
     )
 
-    insert_message(message)
-    send_webhook_message(
+    success = send_webhook_message(
         url=ticket.webhook_url,
         content=message.content,
-        run_as_thread=True
+        run_as_thread=False
         )
+    
+    if success is not True:
+        raise InternalServerError(message="Failed to send message to deliver your message")
+
+    insert_message(message)
 
     return jsonify(MessageResponse(**message.model_dump()).model_dump()), 201
 

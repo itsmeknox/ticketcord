@@ -2,6 +2,11 @@
 # from geventwebsocket.handler import WebSocketHandler
 
 # monkey.patch_all()
+from dotenv import load_dotenv
+
+import os
+if os.getenv("SERVER_MODE") == "PRODUCTION":
+    load_dotenv()
 
 from flask import Flask, jsonify
 from flask_socketio import SocketIO
@@ -9,7 +14,6 @@ from flask_cors import CORS
 from flask_limiter import Limiter, RateLimitExceeded
 from flask_limiter.util import get_remote_address
 
-from dotenv import load_dotenv
 from pydantic import ValidationError
 from discord_bot import run_bot
 
@@ -31,10 +35,8 @@ from socket_manager.send_events import socket_sio_init
 from discord.errors import DiscordException
 
 import json
-import os
 import traceback
-if os.getenv("SERVER_MODE") == "PRODUCTION":
-    load_dotenv()
+
 app = Flask(__name__)
 
 CORS(app, resources={r"/*": {"origins": "*"}}, cors_allowed_origins="*")
