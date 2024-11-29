@@ -41,7 +41,7 @@ def send_webhook_message(
     embed: Optional[Embed] = None,
     embeds: Optional[List[Embed]] = None,
     run_as_thread: bool = False
-) -> Union[bool, threading.Thread]:
+):
     """
     Sends a message to a Discord webhook with optional embeds, either synchronously or in a separate thread.
 
@@ -56,7 +56,7 @@ def send_webhook_message(
         Union[bool, threading.Thread]: Returns True if the message was sent successfully, or the thread object if `run_as_thread` is True.
     """
 
-    def send() -> bool:
+    def send():
         """
         Internal function to send the webhook message.
         """
@@ -74,12 +74,11 @@ def send_webhook_message(
             webhook.add_embed(embed_data)
 
         try:
-            response = webhook.execute()
+            return webhook.execute().status_code in [200, 201, 203, 204]
         except Exception as e:
             print(f"Error sending webhook message: {e}")
             return False
 
-        return True
 
     # Run in a thread if requested
     if run_as_thread:
