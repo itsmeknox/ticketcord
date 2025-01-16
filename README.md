@@ -1,5 +1,7 @@
 # Ticket Support System Backend
 
+### Project by Kamendra Gupta
+
 ## Overview
 
 This backend system provides a ticket support system with various endpoints and socket events to manage tickets and messages.
